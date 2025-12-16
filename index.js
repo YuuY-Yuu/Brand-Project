@@ -107,6 +107,48 @@ app.get('/api/store-by-city', async (req, res) => {
     }
 }); 
 
+// 新增：複合查詢接口 (同時查品牌 + 縣市)
+// 前端呼叫範例：/api/search-brand-in-city?brand=Nike&city=Taichung
+app.get('/api/search-brand-in-city', async (req, res) => {
+    if (!pool) {
+        return res.json({ success: false, message: '資料庫尚未連線' });
+    }
+
+    const brandName = req.query.brand; // 抓取網址上的 ?brand=...
+    const cityName = req.query.city;   // 抓取網址上的 &city=...
+
+    try {
+        // 這裡使用了 SQL 的 JOIN 語法，把兩張表串起來查
+        // 假設：BrandTable 的 location 欄位 = MallTable 的 name 欄位
+        const query = `
+            SELECT B.location, B.floor, M.address 
+            FROM BrandTable B
+            JOIN MallTable M ON B.location = M.name
+            WHERE B.name = @BrandParam AND M.city = @CityParam
+        `;
+
+        const result = await pool.request()
+            .input('BrandParam', sql.NVarChar, brandName)
+            .input('CityParam', sql.NVarChar, cityName)
+            .query(query);
+
+        if (result.recordset.length > 0) {
+            res.json({
+                success: true,
+                data: result.recordset
+            });
+        } else {
+            res.json({
+                success: false,
+                message: `在 ${cityName} 找不到含有 ${brandName} 的百貨資訊`
+            });
+        }
+    } catch (err) {
+        console.error('複合查詢錯誤:', err.message);
+        res.status(500).json({ success: false, message: '伺服器內部錯誤' });
+    }
+});
+
 // 4. 啟動伺服器 (開始接客)
 app.listen(port, () => {
   console.log(`後端伺服器已經啟動，正在監聽 Port ${port}`);
