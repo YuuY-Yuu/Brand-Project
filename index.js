@@ -278,6 +278,17 @@ app.get('/api/ai-recommend', async (req, res) => {
     }
 });
 
+// 取得所有百貨清單 (用於首頁輪播)
+app.get('/api/stores', async (req, res) => {
+    try {
+        if (!pool) return res.status(500).json({ success: false });
+        const result = await pool.request().query("SELECT name, address, city FROM DEPARTMENT_STORE");
+        res.json({ success: true, data: result.recordset });
+    } catch (err) {
+        res.json({ success: false, message: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);
 });
