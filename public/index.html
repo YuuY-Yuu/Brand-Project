@@ -3,412 +3,680 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎄 聖誕尊榮品牌查詢系統</title>
+    <title>🎄 聖誕尊榮品牌查詢系統 - AI 智能搜尋版</title>
     <style>
-        /* ======================================= */
-        /* 基礎樣式 (聖誕配色) */
-        /* ======================================= */
-        body {
-            font-family: 'Times New Roman', 'Microsoft JhengHei', serif;
-            background-color: #f8f8f8;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 40px 0;
+        /* ================= 基礎樣式 ================= */
+        body { font-family: 'Times New Roman', 'Microsoft JhengHei', serif; background-color: #fff0f0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 40px 0; }
+        
+        .container { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(176, 0, 32, 0.1); width: 90%; max-width: 1000px; position: relative; border-top: 8px solid #B00020; margin-bottom: 50px; }
+        
+        h2 { text-align: center; color: #B00020; font-family: 'Georgia', serif; font-size: 2.2rem; margin-bottom: 2rem; border-bottom: 2px solid #FFD700; padding-bottom: 15px; }
+        h3 { color: #B00020; margin-top: 0; font-size: 1.4rem; margin-bottom: 15px; }
+
+        /* ================= 輪播樣式 ================= */
+        .carousel-section { margin-bottom: 3rem; overflow: hidden; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .carousel-container { display: flex; transition: transform 0.8s ease-in-out; width: 100%; }
+        .carousel-card { min-width: 100%; height: 280px; flex-shrink: 0; background-size: cover; background-position: center; color: white; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); }
+        
+        .card-bg-1 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544979590-37e26a6cd737?auto=format&fit=crop&w=1000&q=80'); }
+        .card-bg-2 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=1000&q=80'); }
+        .card-bg-3 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1513297887119-d46091b24bfa?auto=format&fit=crop&w=1000&q=80'); }
+        .card-bg-4 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1576694040870-15938006b023?auto=format&fit=crop&w=1000&q=80'); }
+
+        /* ================= 搜尋框樣式 ================= */
+        .search-box { background: #fffbf0; padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #FFD700; }
+        .search-row { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .input-group { flex: 1; min-width: 200px; position: relative; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none; }
+        input:focus, select:focus { border-color: #B00020; }
+
+        .btn-group { display: flex; gap: 10px; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        .btn-search { background-color: #B00020; color: white; }
+        .btn-search:hover { background-color: #8C0018; transform: translateY(-2px); }
+        .btn-ai { background-color: #FFD700; color: #B00020; }
+        .btn-ai:hover { background-color: #f7c600; transform: translateY(-2px); }
+
+        .clear-btn { position: absolute; right: 12px; top: 40px; background: #ddd; color: white; width: 22px; height: 22px; border-radius: 50%; text-align: center; line-height: 22px; cursor: pointer; display: none; font-size: 14px; }
+        .clear-btn:hover { background: #B00020; }
+
+        /* ================= 搜尋結果卡片 ================= */
+        .card-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 25px; }
+        
+        .result-card {
+            background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 6px solid #B00020; padding: 20px; transition: 0.3s; position: relative; overflow: hidden;
         }
-        .container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 1000px; 
-        }
-        h2 { 
-            text-align: center; 
-            color: #B00020;
-            font-family: 'Georgia', serif;
-            font-size: 2.2rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 15px;
+        .result-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .result-card h4 { margin: 0 0 10px 0; color: #B00020; font-size: 1.3rem; display: flex; align-items: center; gap: 8px; }
+        .result-card .info { color: #555; font-size: 0.95rem; margin: 5px 0; line-height: 1.5; }
+        .result-card .match-box { background: #fff5f5; padding: 10px; border-radius: 8px; margin-top: 15px; border: 1px dashed #B00020; }
+        .result-card .match-title { font-weight: bold; color: #B00020; font-size: 0.9rem; margin-bottom: 5px; }
+        .brand-tag { display: inline-block; background: #FFD700; color: #B00020; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-right: 5px; margin-bottom: 5px; }
+
+        /* ================= AI 視窗 ================= */
+        #aiModal { display: none; position: fixed; bottom: 20px; right: 20px; width: 360px; height: 520px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 3000; flex-direction: column; border: 3px solid #FFD700; overflow: hidden; }
+        .ai-header { background: #B00020; color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #fffcfc; display: flex; flex-direction: column; gap: 12px; }
+        .ai-footer { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
+        .msg-ai { background: #f0f0f0; color: #333; align-self: flex-start; }
+        .msg-user { background: #B00020; color: white; align-self: flex-end; }
+
+        /* =========================================
+           ✨ [最終修正版] 樓層導覽樣式
+           ========================================= */
+        #floorView {
+            display: none; 
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #fffbf0;
+            z-index: 2000;
         }
 
-        /* ======================================= */
-        /* 輪播樣式 */
-        /* ======================================= */
-        .carousel-section {
-            margin-bottom: 3rem;
-            overflow: hidden; 
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-        .carousel-container {
+        .floor-layout {
             display: flex;
-            transition: transform 0.8s ease-in-out;
             width: 100%;
+            height: 100%;
         }
-        .carousel-card {
-            min-width: 100%;
-            height: 280px;
-            flex-shrink: 0;
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 40px;
-            box-sizing: border-box;
+
+        /* 左側容器：固定寬度 */
+        .floor-sidebar-container {
+            width: 220px;
+            background: #2c3e50;
+            border-right: 4px solid #B00020;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+            z-index: 2010;
         }
-        .carousel-card h4 { margin: 0; font-size: 2.2rem; color: #FFD700; margin-bottom: 10px; }
-        .carousel-card p { font-size: 1.1rem; margin: 3px 0; opacity: 0.9; }
 
-        .card-bg-1 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://picsum.photos/1000/400?christmas'); }
-        .card-bg-2 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://picsum.photos/1000/400?tree'); }
-        .card-bg-3 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://picsum.photos/1000/400?gift'); }
-        .card-bg-4 { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://picsum.photos/1000/400?lights'); }
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            background: #2c3e50;
+        }
 
-        /* ======================================= */
-        /* 搜尋區塊 */
-        /* ======================================= */
-        .search-box { 
-            background: #fff5f5;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-        .search-row {
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-        .input-group { flex: 1; min-width: 200px; }
-        label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
-        
-        input, select {
-            width: 100%; 
+        .close-floor-btn {
+            width: 100%;
+            background: #c0392b;
+            color: white;
+            border: none;
             padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+        .close-floor-btn:hover { background: #e74c3c; }
+
+        /* 修正樓層列表：確保捲動正常，不被吃掉 */
+        .floor-btn-list {
+            flex: 1;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column-reverse; /* 低樓層在下 */
+            padding-bottom: 50px; /* 留白防止最底按鈕被截斷 */
         }
 
-        /* 按鈕樣式：分開兩個按鈕 */
-        .btn-group {
+        .floor-btn-list::-webkit-scrollbar { width: 6px; }
+        .floor-btn-list::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        .floor-btn {
+            padding: 18px 10px; 
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #444;
+            transition: all 0.2s;
+            color: #ccc;
+        }
+
+        .floor-btn:hover { background: #444; color: white; }
+
+        .floor-btn.active {
+            background: #B00020; 
+            color: #FFD700;      
+            font-size: 1.5rem; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
+        }
+
+        /* 右側：內容區 */
+        .floor-content {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
             display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .floor-header-sticky {
+            position: sticky;
+            top: 0;
+            background: #fffbf0;
+            z-index: 2005;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* 樓層內搜尋框 + 查詢按鈕 */
+        .floor-search-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+            width: 360px;
             gap: 10px;
         }
 
-        /* 一般搜尋按鈕 (紅色) */
-        .btn-search {
-            padding: 12px 25px;
-            background-color: #B00020;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            height: 46px;
-            white-space: nowrap;
+        .floor-search-input-wrapper {
+            position: relative;
+            flex: 1;
         }
-        .btn-search:hover { background-color: #8C0018; transform: translateY(-2px); }
 
-        /* AI 按鈕 (藍色) */
-        .btn-ai {
-            padding: 12px 25px;
-            background-color: #1976D2; /* 藍色 */
-            color: white;
-            border: none;
-            border-radius: 8px;
+        .floor-search-input {
+            width: 100%;
+            padding: 12px 40px 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background: white;
+            box-sizing: border-box;
+        }
+        
+        .floor-search-input:focus {
+            border-color: #B00020;
+            box-shadow: 0 0 8px rgba(176, 0, 32, 0.1);
+        }
+
+        .floor-search-clear {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            color: #999;
             font-size: 16px;
+            display: none; 
             font-weight: bold;
-            transition: all 0.3s;
-            height: 46px;
-            white-space: nowrap;
+            z-index: 5;
+        }
+        .floor-search-clear:hover { color: #B00020; }
+
+        .btn-floor-query {
+            background-color: transparent;
+            color: #2c3e50;                /* 與左側選單一致的深石青色 */
+            border: 2px solid #ddd;        /* 與搜尋框一致的邊框粗細與顏色 */
+            border-radius: 50%;            /* 改為圓形，視覺上與圓角搜尋框最契合 */
+            width: 48px;                   /* 稍微放大一點，與搜尋框高度更協調 */
+            height: 48px;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
-        }
-        .btn-ai:hover { background-color: #0D47A1; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(25, 118, 210, 0.4); }
-
-        /* ======================================= */
-        /* 結果顯示區 */
-        /* ======================================= */
-        
-        /* AI 對話框樣式 */
-        .ai-message-box {
-            background-color: #E3F2FD;
-            border-left: 5px solid #2196F3;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            color: #0D47A1;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
             font-size: 1.1rem;
-            line-height: 1.5;
-            display: none; /* 預設隱藏 */
-            animation: fadeIn 0.5s ease;
         }
 
-        /* 卡片容器 */
-        .card-container {
+        .btn-floor-query:hover { 
+            background-color: #f4f4f4;
+            border-color: #2c3e50;        /* 移上去時邊框變深，增加互動感 */
+            color: #2c3e50;
+            transform: scale(1.05);
+        }
+
+        .btn-floor-query:active {
+            transform: scale(0.95);        /* 點擊時有內縮壓力感 */
+        }
+
+        /* 品牌方塊牆 */
+        .floor-grid-container {
+            padding: 30px;
+        }
+
+        .brand-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px; 
-            margin-top: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 15px;
         }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 6px solid #FFD700;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            transition: 0.3s;
-            display: flex;
-            flex-direction: column;
-        }
-        .card:hover { transform: translateY(-5px); }
-        
-        /* 這裡修正了：標題要是百貨公司名字 */
-        .card h4 { margin: 0 0 10px 0; color: #B00020; font-size: 1.3rem; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
-        .card p { margin: 6px 0; color: #555; font-size: 1rem; }
-        
-        /* 品牌小標籤樣式 */
-        .brand-badge {
-            display: inline-block;
-            background-color: #B00020;
-            color: white;
-            padding: 3px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .brand-badge.ai-tag { background-color: #1976D2; } /* AI 推薦的用藍色 */
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .brand-box {
+            aspect-ratio: 1 / 1; 
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8px; 
+            font-size: 0.9rem; 
+            font-weight: 500;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            word-break: break-word;
+            cursor: default;
+        }
+
+        /* 高亮樣式 */
+        .brand-box.highlight-brand {
+            background-color: #fff3e0;
+            border: 3px solid #e65100;
+            color: #e65100;
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(230, 81, 0, 0.4);
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        @media (max-width: 900px) {
+            .floor-sidebar-container { width: 100px; } 
+            .brand-grid { grid-template-columns: repeat(3, 1fr); }
+            .floor-header-sticky { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
+            .floor-search-container { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>✨ 品牌門市查詢 & AI 助理</h2>
+<div class="container" id="mainView">
+    <h2>✨ 聖誕尊榮品牌查詢系統</h2>
 
     <div class="carousel-section">
         <div id="autoCarousel" class="carousel-container">
-            <div class="carousel-card card-bg-1">
-                <h4>遠百信義 A13 | 聖誕奇幻之旅</h4>
-                <p>🎁 優惠：頂級精品限時折扣，消費滿額贈送聖誕禮盒！</p>
-            </div>
-            <div class="carousel-card card-bg-2">
-                <h4>新光三越 鑽石塔 | 璀璨星光盛宴</h4>
-                <p>🛍️ 特色：全台獨家聖誕樹造景，打卡送飲品兌換券！</p>
-            </div>
-            <div class="carousel-card card-bg-3">
-                <h4>SOGO 忠孝館 | 耶誕暖心獻禮</h4>
-                <p>🎄 推薦：卡友獨享，特定品牌消費享 9 折優惠！</p>
-            </div>
-            <div class="carousel-card card-bg-4">
-                <h4>微風南山 | 奢華跨年派對</h4>
-                <p>🥂 推薦：頂樓酒吧跨年活動套票開賣中！</p>
-            </div>
+            <div class="carousel-card card-bg-1"><h4>台北信義新天地 A11</h4><p>🎁 聖誕亮點：全台最高聖誕樹，必拍景點！</p></div>
+            <div class="carousel-card card-bg-2"><h4>桃園統領百貨</h4><p>🛍️ 優惠：年末感謝祭，全館滿千送百。</p></div>
+            <div class="carousel-card card-bg-3"><h4>板橋大遠百</h4><p>🎄 特色：威尼斯廣場聖誕市集開跑。</p></div>
+            <div class="carousel-card card-bg-4"><h4>新光三越 鑽石塔</h4><p>🥂 推薦：頂級香氛與米其林餐廳進駐。</p></div>
         </div>
     </div>
 
     <div class="search-box">
-        <h3>🔍 查詢功能</h3>
-        <p style="font-size: 0.9rem; color: #666; margin-top:-10px; margin-bottom: 20px;">
-            輸入品牌 (如: Nike) 可直接查詢，或輸入問題 (如: 推薦好吃的) 詢問 AI。
-        </p>
-
+        <h3>🔍 找品牌 / 找百貨</h3>
         <div class="search-row">
-            <div class="input-group" style="flex: 0 0 150px;">
-                <label>選擇城市</label>
-                <select id="brandCitySelect">
-                    <option value="">-- 全部 --</option>
+            <div class="input-group" style="flex: 0.4;">
+                <label>選擇地區</label>
+                <select id="citySelect">
+                    <option value="All">全台搜尋</option>
                     <option value="Taipei">臺北</option>
                     <option value="NewTaipei">新北</option>
-                    <option value="Keelung">基隆</option>
                     <option value="Taoyuan">桃園</option>
-                    <option value="Hsinchu">新竹</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>輸入內容</label>
-                <input type="text" id="brandCityInput" placeholder="輸入品牌 (Nike) 或 問問 AI (晚餐吃什麼)...">
+            <div class="input-group" style="flex: 1.2;">
+                <label>輸入品牌</label>
+                <input type="text" id="brandInput" placeholder="輸入品牌名稱..." oninput="checkInput()" onkeypress="if(event.key==='Enter') smartSearch()">
+                <div id="clearBtn" class="clear-btn" onclick="clearInput()">✕</div>
             </div>
-            
             <div class="btn-group">
-                <button class="btn-search" onclick="doNormalSearch()">🔍 搜尋品牌</button>
-                <button class="btn-ai" onclick="doAiSearch()">🤖 問 AI</button>
+                <button class="btn-search" onclick="smartSearch()">立即查詢</button>
+                <button class="btn-ai" onclick="toggleAI()">🪄 AI 詢問</button>
             </div>
         </div>
+        
+        <div id="resultArea" class="card-container"></div>
+    </div>
+</div>
 
-        <div id="aiResponseBox" class="ai-message-box"></div>
+<div id="floorView">
+    <div class="floor-layout">
+        <div class="floor-sidebar-container">
+            <div class="sidebar-header">
+                <button class="close-floor-btn" onclick="closeFloorView()">← 退出導覽</button>
+            </div>
+            <div class="floor-btn-list" id="floorBtnList">
+                </div>
+        </div>
 
-        <div id="resultContainer" class="card-container"></div>
+        <div class="floor-content">
+            <div class="floor-header-sticky">
+                <div>
+                    <h2 id="floorTitle" style="margin:0; border:none; text-align:left; font-size:1.7rem;">百貨名稱</h2>
+                    <span style="color:#666;">目前樓層：</span>
+                    <span id="currentFloorLabel" style="color:#B00020; font-weight:bold; font-size:1.5rem;">1F</span>
+                </div>
+                
+                <div class="floor-search-container">
+                    <div class="floor-search-input-wrapper">
+                        <input type="text" id="floorSearchInput" class="floor-search-input" placeholder="在百貨內搜尋品牌..." oninput="checkFloorSearch()" onkeypress="if(event.key==='Enter') searchInFloor()">
+                        <span id="floorSearchClear" class="floor-search-clear" onclick="clearFloorSearch()">✕</span>
+                    </div>
+                    <button class="btn-floor-query" onclick="searchInFloor()">🔍</button>
+                </div>
+            </div>
+            
+            <div class="floor-grid-container">
+                <div id="brandGrid" class="brand-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="aiModal">
+    <div class="ai-header">
+        <span>🤖 聖誕購物 AI 顧問</span>
+        <span style="cursor:pointer; font-size:1.2rem;" onclick="toggleAI()">✕</span>
+    </div>
+    <div class="ai-body" id="aiChatBody">
+        <div class="msg msg-ai">您好！我是聖誕 AI 顧問 🎅<br>資料庫已更新！<br>您可以問我：「桃園哪裡有 Nike？」或「信義 A8 有什麼好吃的？」</div>
+    </div>
+    <div class="ai-footer">
+        <input type="text" id="aiInput" placeholder="輸入問題..." onkeypress="if(event.key==='Enter') sendAiMsg()">
+        <button class="btn-search" style="padding: 8px 15px;" onclick="sendAiMsg()">送出</button>
     </div>
 </div>
 
 <script>
-    // 設定後端位址
     const BASE_URL = 'http://localhost:3000';
 
-    // 取得 UI 元素
-    const inputEl = document.getElementById('brandCityInput');
-    const selectEl = document.getElementById('brandCitySelect');
-    const resultDiv = document.getElementById('resultContainer');
-    const aiBox = document.getElementById('aiResponseBox');
-
-    // ==========================================
-    // 功能 1：一般搜尋 (只找資料庫)
-    // ==========================================
-    async function doNormalSearch() {
-        const keyword = inputEl.value.trim();
-        const city = selectEl.value;
-
-        // 清空並隱藏 AI 區塊
-        aiBox.style.display = 'none';
-        aiBox.innerHTML = '';
-        resultDiv.innerHTML = "⏳ 正在搜尋資料庫...";
-
-        if (!keyword && !city) {
-            alert("請輸入品牌名稱或選擇城市！");
-            resultDiv.innerHTML = "";
-            return;
-        }
-
-        // 決定 API 路徑
-        let apiUrl = '';
-        if (keyword && city) {
-            apiUrl = `${BASE_URL}/api/search-brand-in-city?city=${city}&brand=${encodeURIComponent(keyword)}`;
-        } else if (keyword) {
-            apiUrl = `${BASE_URL}/api/brand-location?name=${encodeURIComponent(keyword)}`;
-        } else {
-            apiUrl = `${BASE_URL}/api/store-by-city?city=${city}`;
-        }
-
-        try {
-            const res = await fetch(apiUrl);
-            const data = await res.json();
-            
-            // 這裡要注意：API 回傳格式可能是 { success: true, data: [...] } 或直接 [...]
-            const list = data.data || data; 
-
-            if (list && list.length > 0) {
-                // 渲染卡片，傳入 keyword 當作標籤
-                renderCards(list, keyword || "百貨專櫃");
-            } else {
-                resultDiv.innerHTML = `<p style="width:100%; text-align:center;">❌ 資料庫中找不到關於「${keyword}」的資料。</p>`;
-            }
-        } catch (error) {
-            console.error(error);
-            resultDiv.innerHTML = "<p style='color:red;'>連線錯誤，請確認後端伺服器已啟動。</p>";
-        }
-    }
-
-    // ==========================================
-    // 功能 2：AI 問答 (問 AI + 推薦)
-    // ==========================================
-    async function doAiSearch() {
-        const question = inputEl.value.trim();
-        if (!question) {
-            alert("請輸入問題給 AI，例如：我想吃好吃的晚餐");
-            return;
-        }
-
-        // 顯示載入中
-        aiBox.style.display = 'block';
-        aiBox.innerHTML = "🤖 AI 正在思考中... 請稍候...";
-        resultDiv.innerHTML = ""; // 清空舊卡片
-
-        try {
-            const res = await fetch(`${BASE_URL}/api/ai-recommend?q=${encodeURIComponent(question)}`);
-            const data = await res.json();
-
-            if (data.success) {
-                // 1. 顯示 AI 的文字回答
-                const suggestions = data.ai_suggestion ? data.ai_suggestion.join('、') : "沒有特別建議";
-                aiBox.innerHTML = `
-                    <strong>🤖 AI 導覽員建議：</strong><br>
-                    根據您的需求，我推薦您可以參考：<span style="color:#D81B60; font-weight:bold;">${suggestions}</span>
-                `;
-
-                // 2. 顯示對應的資料庫卡片
-                if (data.data && data.data.length > 0) {
-                    renderCards(data.data, "AI 精選");
-                } else {
-                    resultDiv.innerHTML = `<p style="width:100%; text-align:center; color:#666;">(資料庫中暫時沒有這些推薦品牌的詳細櫃位資料)</p>`;
-                }
-            } else {
-                aiBox.innerHTML = "⚠️ AI 暫時無法回應，請稍後再試。";
-            }
-
-        } catch (error) {
-            console.error(error);
-            aiBox.innerHTML = "❌ AI 連線失敗，請檢查後端 Key 是否正確。";
-        }
-    }
-
-    // ==========================================
-    // 共用功能：渲染卡片 (含樓層顯示)
-    // ==========================================
-    function renderCards(dataList, badgeText) {
-        resultDiv.innerHTML = '';
+    // 1. 搜尋邏輯
+    async function smartSearch() {
+        const city = document.getElementById('citySelect').value;
+        const brand = document.getElementById('brandInput').value.trim();
+        const resultArea = document.getElementById('resultArea');
         
-        if (!dataList || dataList.length === 0) {
-            resultDiv.innerHTML = `<p style="width:100%; text-align:center;">❌ 找不到資料，請確認資料庫是否有建立該品牌的櫃位資料。</p>`;
+        resultArea.innerHTML = "<p style='width:100%;text-align:center;color:#666;'>⏳ 正在搜尋資料庫...</p>";
+
+        try {
+            const apiUrl = `${BASE_URL}/api/smart-search?city=${city}&brand=${encodeURIComponent(brand)}`;
+            const res = await fetch(apiUrl);
+            if (!res.ok) throw new Error("API Error");
+            
+            const json = await res.json();
+            const data = json.data || [];
+
+            resultArea.innerHTML = "";
+            if (data.length === 0) {
+                resultArea.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:20px;color:#888;'>❌ 找不到相關資料</div>";
+                return;
+            }
+
+            const mallMap = new Map();
+            data.forEach(row => {
+                if (!mallMap.has(row.storeName)) {
+                    mallMap.set(row.storeName, { ...row, foundBrands: [] });
+                }
+                if (brand && row.brand_name) {
+                    mallMap.get(row.storeName).foundBrands.push(`${row.brand_name} (${row.floor})`);
+                }
+            });
+
+            const sortedMalls = Array.from(mallMap.values()).sort((a, b) => {
+                const countA = new Set(a.foundBrands).size;
+                const countB = new Set(b.foundBrands).size;
+                return countB - countA;
+            });
+
+            sortedMalls.forEach(mall => {
+                const phone = mall.phone ? `📞 ${mall.phone}` : "";
+                const hours = mall.business_hours ? `🕒 ${mall.business_hours}` : "";
+                const floorRange = mall.floor_range ? `樓層：${mall.floor_range}` : "";
+                
+                let brandHtml = "";
+                let matchBadge = ""; 
+                if (mall.foundBrands.length > 0) {
+                    const uniqueBrands = [...new Set(mall.foundBrands)];
+                    if (brand.includes(" ") || brand.includes(",")) {
+                        matchBadge = `<span style="font-size:0.8rem; color:#E65100; margin-left:10px;">(符合 ${uniqueBrands.length} 個)</span>`;
+                    }
+                    brandHtml = `
+                        <div class="match-box">
+                            <div class="match-title">🎉 找到以下品牌：${matchBadge}</div>
+                            <div>${uniqueBrands.map(b => `<span class="brand-tag">${b}</span>`).join('')}</div>
+                        </div>
+                    `;
+                }
+
+                resultArea.innerHTML += `
+                    <div class="result-card">
+                        <h4>🎄 ${mall.storeName}</h4>
+                        <p class="info">📍 ${mall.address}</p>
+                        <p class="info" style="font-size:0.9rem; color:#666;">${phone} | ${hours}</p>
+                        <p class="info" style="color:#B00020; font-weight:bold;">${floorRange}</p>
+                        ${brandHtml}
+                        <button class="btn-search" style="margin-top:15px; width:100%; font-size:0.9rem;" 
+                            onclick="showFloorPlan('${mall.storeName}')">
+                            查看完整樓層
+                        </button>
+                    </div>
+                `;
+            });
+
+        } catch (e) {
+            console.error(e);
+            resultArea.innerHTML = `<p style='color:red;'>錯誤：${e.message}</p>`;
+        }
+    }
+
+    // 2. 樓層導覽邏輯
+    let currentFloorData = {}; 
+    let currentMallName = ""; 
+
+    async function showFloorPlan(storeName) {
+        document.getElementById('mainView').style.display = 'none';
+        document.getElementById('floorView').style.display = 'block';
+        document.getElementById('floorTitle').innerText = storeName;
+        currentMallName = storeName;
+
+        document.getElementById('floorSearchInput').value = "";
+        document.getElementById('floorSearchInput').placeholder = `在 ${storeName} 內搜尋...`;
+        checkFloorSearch();
+        
+        const floorBtnList = document.getElementById('floorBtnList');
+        const grid = document.getElementById('brandGrid');
+        
+        floorBtnList.innerHTML = "<div style='color:#ccc;text-align:center;padding:10px;'>...</div>";
+        grid.innerHTML = "";
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/mall-floors?name=${encodeURIComponent(storeName)}`);
+            const json = await res.json();
+            
+            floorBtnList.innerHTML = "";
+            
+            if (!json.success || !json.data) {
+                floorBtnList.innerHTML = "<div style='padding:10px; color:white;'>無資料</div>";
+                return;
+            }
+
+            const floors = json.data;
+            currentFloorData = floors;
+
+            // 排序樓層
+            const floorKeys = Object.keys(floors).sort((a, b) => {
+                return getFloorValue(a) - getFloorValue(b);
+            });
+
+            floorKeys.forEach(f => {
+                const btn = document.createElement('div');
+                btn.className = 'floor-btn';
+                btn.innerText = f;
+                btn.id = `btn-floor-${f}`; 
+                btn.onclick = () => selectFloor(f, btn);
+                floorBtnList.appendChild(btn);
+            });
+
+            // 預設點選：優先找 1F，沒有的話點最低樓層
+            if (document.getElementById('btn-floor-1F')) {
+                document.getElementById('btn-floor-1F').click();
+            } else if (floorKeys.length > 0) {
+                document.getElementById(`btn-floor-${floorKeys[0]}`).click();
+            }
+
+        } catch (e) {
+            console.error(e);
+            floorBtnList.innerHTML = "Err";
+        }
+    }
+
+    // 3. 渲染樓層 (持久化標記邏輯)
+    function selectFloor(floorName, btnElement) {
+        document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
+        if(btnElement) btnElement.classList.add('active');
+        
+        document.getElementById('currentFloorLabel').innerText = floorName;
+
+        const grid = document.getElementById('brandGrid');
+        grid.innerHTML = "";
+        
+        const brands = currentFloorData[floorName] || [];
+        
+        if (brands.length === 0) {
+            grid.innerHTML = "<div style='grid-column:1/-1;text-align:center;color:#999;'>本樓層無資料</div>";
             return;
         }
 
-        dataList.forEach(item => {
-            const storeName = item.storeName || item.name || "未知百貨門市"; 
-            const address = item.address || "地址資料尚未建立";
-            // 處理樓層顯示：如果有資料就顯示，沒有就寫 "未標示"
-            const floor = item.floor ? item.floor : "未標示";
-            
-            const badgeClass = badgeText === "AI 精選" ? "brand-badge ai-tag" : "brand-badge";
+        const keyword = document.getElementById('floorSearchInput').value.trim().toLowerCase();
 
-            // 👇 卡片 HTML 模板
-            resultDiv.innerHTML += `
-                <div class="card">
-                    <h4>🎄 ${storeName}</h4>
-                    <div>
-                        <span class="${badgeClass}">${badgeText}</span>
-                    </div>
-                    
-                    <p style="margin-top:10px; font-weight:bold; color:#E65100;">
-                        🏢 樓層：${floor}
-                    </p>
+        brands.forEach(brand => {
+            const card = document.createElement('div');
+            card.className = 'brand-box';
+            card.innerText = brand;
+            card.dataset.name = brand; 
 
-                    <p style="color:#555;">📍 地址：${address}</p>
-                </div>
-            `;
+            // 標記搜尋命中
+            if (keyword && brand.toLowerCase().includes(keyword)) {
+                card.classList.add('highlight-brand');
+            }
+
+            grid.appendChild(card);
         });
     }
 
-    // 自動輪播腳本
-    document.addEventListener('DOMContentLoaded', () => {
-        const carousel = document.getElementById('autoCarousel');
-        let index = 0;
+    // 4. 樓層內搜尋
+    function checkFloorSearch() {
+        const val = document.getElementById('floorSearchInput').value;
+        const btn = document.getElementById('floorSearchClear');
+        btn.style.display = val ? 'block' : 'none';
+        
+        if (!val) {
+             const currentFloor = document.getElementById('currentFloorLabel').innerText;
+             const currentBtn = document.querySelector('.floor-btn.active');
+             if(currentFloor) selectFloor(currentFloor, currentBtn);
+        }
+    }
+
+    function clearFloorSearch() {
+        document.getElementById('floorSearchInput').value = '';
+        checkFloorSearch();
+        const currentFloor = document.getElementById('currentFloorLabel').innerText;
+        const currentBtn = document.querySelector('.floor-btn.active');
+        if(currentFloor) selectFloor(currentFloor, currentBtn);
+    }
+
+    function searchInFloor() {
+        const keyword = document.getElementById('floorSearchInput').value.trim().toLowerCase();
+        if (!keyword) return;
+
+        let matchedFloors = [];
+        for (const [floor, brands] of Object.entries(currentFloorData)) {
+            if (brands.some(b => b.toLowerCase().includes(keyword))) {
+                matchedFloors.push(floor);
+            }
+        }
+
+        if (matchedFloors.length > 0) {
+            // 跳轉至符合條件中的「最低樓層」
+            matchedFloors.sort((a, b) => getFloorValue(a) - getFloorValue(b));
+            const targetFloor = matchedFloors[0];
+
+            const btn = document.getElementById(`btn-floor-${targetFloor}`);
+            if (btn) btn.click();
+        } else {
+            alert(`在 ${currentMallName} 找不到與「${keyword}」相關的品牌。`);
+        }
+    }
+
+    // 5. 排序邏輯修正 (處理特殊樓層如 GBF)
+    function getFloorValue(f) {
+        f = f.toUpperCase().trim();
+        // 大江特殊樓層：GBF (等同 B1)
+        if (f === 'GBF') return -1;
+        // 地下層：B1 -> -1, B2 -> -2
+        if (f.startsWith('B')) {
+            const num = parseInt(f.replace('B', ''));
+            return isNaN(num) ? -1 : -num; 
+        }
+        // 地上層：1F -> 1, 2F -> 2
+        if (f.endsWith('F')) {
+            const num = parseInt(f.replace('F', ''));
+            return isNaN(num) ? 100 : num;
+        }
+        // 其他：G, M, UG 等依序排在中間
+        if (f === 'G') return 0;
+        if (f === 'M' || f === 'UG') return 0.5;
+        return 100;
+    }
+
+    function closeFloorView() {
+        document.getElementById('mainView').style.display = 'block';
+        document.getElementById('floorView').style.display = 'none';
+        clearFloorSearch();
+    }
+
+    // AI 功能
+    async function sendAiMsg() {
+        const input = document.getElementById('aiInput');
+        const body = document.getElementById('aiChatBody');
+        const q = input.value.trim();
+        if (!q) return;
+
+        body.innerHTML += `<div class="msg msg-user">${q}</div>`;
+        input.value = '';
+        body.scrollTop = body.scrollHeight;
+
+        const loadId = 'loading-' + Date.now();
+        body.innerHTML += `<div id="${loadId}" class="msg msg-ai">🤖 思考中...</div>`;
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/ai-recommend?q=${encodeURIComponent(q)}`);
+            const json = await res.json();
+            document.getElementById(loadId).remove();
+            body.innerHTML += `<div class="msg msg-ai">${json.reply.replace(/\n/g, '<br>')}</div>`;
+        } catch (e) {
+            document.getElementById(loadId).remove();
+            body.innerHTML += `<div class="msg msg-ai">連線錯誤。</div>`;
+        }
+        body.scrollTop = body.scrollHeight;
+    }
+
+    let cIdx = 0;
+    if(document.getElementById('autoCarousel')) {
         setInterval(() => {
-            index = (index + 1) % 4;
-            carousel.style.transform = `translateX(-${index * 100}%)`;
-        }, 3000);
-    });
+            cIdx = (cIdx + 1) % 4;
+            document.getElementById('autoCarousel').style.transform = `translateX(-${cIdx * 100}%)`;
+        }, 3500);
+    }
+    function checkInput() {
+        const val = document.getElementById('brandInput').value;
+        const btn = document.getElementById('clearBtn');
+        if(btn) btn.style.display = val ? 'block' : 'none';
+    }
+    function clearInput() {
+        document.getElementById('brandInput').value = '';
+        checkInput();
+    }
+    function toggleAI() {
+        const modal = document.getElementById('aiModal');
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
 </script>
 </body>
 </html>

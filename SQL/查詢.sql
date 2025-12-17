@@ -1,0 +1,5 @@
+--SELECT * FROM BRAND_PRESENCE
+--WHERE location = N'板橋大遠百';
+SELECT * FROM DEPARTMENT_STORE ;
+--WHERE name = N'桃園遠東百貨';
+--BRAND_PRESENCE_Wrong
