@@ -12,7 +12,7 @@ const port = 3000;
 
 // 請確認 .env 裡有 GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // 資料庫設定 (請自行確認帳密是否正確)
 const dbConfig = {
@@ -145,136 +145,59 @@ app.get('/api/mall-floors', async (req, res) => {
 });
 
 // =========================================================
-// 🤖 API 3: AI 推薦 (Gemini)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (智慧路由版)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (暴力關鍵字版 - 解決無類別問題)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (終極版：支援地點 + 類別交叉搜尋)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (修正語法、無紅線版)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (反向過濾版 - 精準度最高)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (省流版：一次對話，不會爆額度)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (本機模擬版 - 暫時繞過 Google API 以便測試系統)
-// =========================================================
-// =========================================================
-// 🤖 API 3: AI 推薦 (全量名單判讀版 - 既然不分類，就讓 AI 硬看)
+// 🤖 API 3: AI 推薦 (整合新版角色指令與格式要求)
 // =========================================================
 app.get('/api/ai-recommend', async (req, res) => {
     const userQuery = req.query.q || '';
     if (!userQuery) return res.status(400).json({ success: false });
 
-    console.log(`🤖 (全量版) 使用者問：${userQuery}`);
+    console.log(`🤖 使用者問：${userQuery}`);
 
     try {
-        // --- 步驟 1: 簡單判斷使用者在問哪間百貨 (鎖定範圍) ---
-        // 為了避免把「全台灣」的品牌都丟給 AI (會爆掉)，我們先鎖定百貨
-        let targetLoc = "";
-        const q = userQuery.toLowerCase();
+        if (!pool) return res.status(500).json({ success: false, reply: "資料庫未連線" });
 
-        if (q.includes("a13")) targetLoc = "遠百信義A13"; 
-        else if (q.includes("a11")) targetLoc = "台北信義新天地 A11";
-        else if (q.includes("a8")) targetLoc = "台北信義新天地 A8";
-        else if (q.includes("統領")) targetLoc = "桃園統領百貨";
-        else if (q.includes("板橋")) targetLoc = "板橋大遠百"; // 請根據您 DB 實際名稱調整
-        else if (q.includes("桃園")) targetLoc = "桃園"; // 廣泛搜尋
-
-        // --- 步驟 2: 撈出該範圍的「全部」品牌 ---
-        let rawBrands = [];
-        if (pool) {
-            const request = pool.request();
-            let sqlQuery = "";
-            
-            if (targetLoc) {
-                // 有指定百貨，撈該百貨全部
-                request.input('loc', sql.NVarChar, `%${targetLoc}%`);
-                sqlQuery = `SELECT name, floor, location FROM BRAND_PRESENCE WHERE location LIKE @loc`;
-            } else {
-                // 沒指定百貨，這很危險(資料太多)，我們先限制只撈前 100 筆給 AI 判斷，不然會爆
-                sqlQuery = `SELECT TOP 100 name, floor, location FROM BRAND_PRESENCE`;
-            }
-            
-            const dbRes = await request.query(sqlQuery);
-            rawBrands = dbRes.recordset;
-        }
-
-        if (rawBrands.length === 0) {
-             return res.json({ success: true, reply: "資料庫裡找不到該百貨的任何資料，請確認資料庫是否有建立品牌數據。", data: [] });
-        }
-
-        // --- 步驟 3: 整包丟給 AI 篩選 ---
-        // 把品牌名稱串成字串，例如 "Nike, Adidas, 鼎泰豐, Uniqlo..."
-        const brandListText = rawBrands.map(b => b.name).join(", ");
+        // 1. 撈資料
+        const sqlQuery = `
+            SELECT D.name as storeName, D.phone, D.business_hours, B.name as brand_name, B.floor
+            FROM DEPARTMENT_STORE D
+            JOIN BRAND_PRESENCE B ON D.name = B.location
+        `;
+        const dbRes = await pool.request().query(sqlQuery);
         
-        console.log(`📦 撈到 ${rawBrands.length} 筆品牌，正在送給 AI 判讀...`);
+        // 2. 整理資料給 AI
+        const dataContext = dbRes.recordset.map(row => 
+            `[${row.storeName}] 品牌:${row.brand_name} 樓層:${row.floor} | 電話:${row.phone} | 時間:${row.business_hours}`
+        ).join("\n");
 
+        // 3. 組合 Prompt (這裡加入了您指定的新規則！)
         const prompt = `
-            使用者問：「${userQuery}」。
-            以下是我們資料庫裡有的所有品牌名單：
-            [ ${brandListText} ]
+            【資料庫內容】：
+            ${dataContext}
 
-            請當作你是一個分類過濾器：
-            1. 根據使用者的問題，從上面名單中挑選出符合的品牌。
-            2. 例如使用者問「吃的」，你就挑出所有餐廳；問「鞋子」，就挑出鞋店。
-            3. 如果使用者問的是某個特定品牌(如 Nike)，就挑出 Nike。
-            4. 請回傳一個 JSON 陣列，只包含符合的品牌名稱。例如：["鼎泰豐", "瓦城"]。
-            5. 如果都沒有符合的，回傳 []。
+            【使用者問題】：
+            「${userQuery}」
+
+            【你的角色與任務】：
+            你是一個聖誕購物 AI 顧問 🎅。
+
+            【回答規範 (請嚴格遵守)】：
+            1. **語氣**：回答要親切、有聖誕氣氛 (可適量使用 Emoji 🎄🎁)。
+            2. **格式重點**：
+               - 當提到 **【百貨公司名稱】**、**【餐廳或品牌名稱】**、**【樓層 (如 B2, 4F, GBF)】** 時，請務必使用 Markdown 粗體格式 (用兩個星號 ** 包起來)。
+               - 例如：推薦您去 **板橋大遠百** 的 **9F** 吃 **鼎泰豐**。
+            3. **內容長度**：內容要精簡，重點呈現，讓使用者一眼就能看完，不要廢話。
+            4. **邏輯**：GBF 樓層請視為 1F 下方。如果找不到資料請老實說。
         `;
 
-        // 使用 gemini-1.5-flash (它處理長文章能力較好)
-        // 如果這個模型還是 404，請改回 gemini-flash-latest
+        // 4. 送出
         const result = await model.generateContent(prompt);
-        const text = result.response.text().replace(/```json|```/g, '').trim();
+        const response = await result.response;
         
-        let matchedNames = [];
-        try { matchedNames = JSON.parse(text); } catch(e) {
-            console.error("AI 解析失敗", e);
-        }
-
-        console.log("🎯 AI 挑選結果:", matchedNames);
-
-        // --- 步驟 4: 回傳結果 ---
-        // 根據 AI 挑出來的名字，回去 rawBrands 把完整資訊 (樓層等) 抓出來
-        const finalData = rawBrands.filter(b => matchedNames.includes(b.name));
-
-        let replyText = "";
-        if (finalData.length > 0) {
-            replyText = `根據您的需求，在資料庫名單中幫您挑選出以下結果：\n` + 
-                        finalData.map(d => `• ${d.name} (${d.location} ${d.floor})`).join("\n");
-        } else {
-            replyText = "AI 看過資料庫名單後，認為沒有符合您需求的品牌。";
-        }
-
-        res.json({ 
-            success: true, 
-            reply: replyText, 
-            keywords: [],
-            data: finalData.map(d => ({ // 轉成前端要的格式
-                storeName: d.location,
-                brand_name: d.name,
-                floor: d.floor
-            }))
-        });
+        res.json({ success: true, reply: response.text() });
 
     } catch (err) {
         console.error('AI Error:', err);
-        // 如果爆掉 (例如名單太長)，建議使用者分類
-        if (err.message.includes('429') || err.message.includes('limit')) {
-            res.json({ success: true, reply: "⚠️ 該百貨品牌太多，AI 一時處理不完 (超過額度)。建議我們還是幫資料庫加上「類別」欄位會比較穩！", data: [] });
-        } else {
-            res.json({ success: false, message: '系統忙碌中' });
-        }
+        res.json({ success: false, reply: "聖誕老人連線忙碌中，請稍後再試！🎅" });
     }
 });
 

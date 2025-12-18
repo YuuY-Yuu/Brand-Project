@@ -2,7 +2,7 @@
 --EXEC sp_rename 'MallTable', 'DEPARTMENT_STORE';
 
 ---- 2. 把 BrandTable 改名為 BRAND_PRESENCE (暫時先這樣對應，雖然欄位還沒完全正規化)
---EXEC sp_rename 'BrandTable', 'BRAND_PRESENCE';--BRAND_PRESENCE_Wrong
+EXEC sp_rename 'BRAND_PRESENCE', 'BRAND_PRESENCE_Wrong';--BRAND_PRESENCE_Wrong
 
 ---- 3. 修改欄位名稱以符合您的設計
 ---- 修改百貨表欄位
@@ -14,4 +14,4 @@
 --EXEC sp_rename 'BRAND_PRESENCE.brand_name', 'name', 'COLUMN'; -- 您的圖中 BRAND 表是用 name，我們先暫時用這個
 ---- location 和 floor 我們原本就有，先留著
 
-EXEC sp_rename 'BRAND_PRESENCE_Wrong', 'BRAND_PRESENCE';--BRAND_PRESENCE_Wrong
+--EXEC sp_rename 'BRAND_PRESENCE_Wrong', 'BRAND_PRESENCE';--BRAND_PRESENCE_Wrong

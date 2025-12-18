@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎄 聖誕尊榮品牌查詢系統 - 最終修正版</title>
+    <title>🎄 聖誕尊榮品牌查詢系統</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -274,6 +274,8 @@
     @media (max-width: 900px) { .floor-sidebar-container { width: 100px; } .floor-header-sticky { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; } .floor-search-container { width: 100%; } }
 </style>
     
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 </head>
 <body>
 
@@ -364,7 +366,7 @@
     /* ============================================================
    前端測試模式 (Mock Mode) - 開啟後不需要後端也能跑
    ============================================================ */
-const USE_MOCK = true; // ⬅️ 要接後端時改回 false
+const USE_MOCK = false; // ⬅️ 要接後端時改回 false
 
 if (USE_MOCK) {
     window.fetch = async (url) => {
@@ -847,7 +849,8 @@ function closeFloorView() {
             const res = await fetch(`${BASE_URL}/api/ai-recommend?q=${encodeURIComponent(q)}`);
             const json = await res.json();
             document.getElementById(loadId).remove();
-            body.innerHTML += `<div class="msg msg-ai">${json.reply.replace(/\n/g, '<br>')}</div>`;
+            // ✅ 新的寫法 (支援 Markdown 粗體、清單與換行)
+            body.innerHTML += `<div class="msg msg-ai">${marked.parse(json.reply)}</div>`;
         } catch (e) {
             document.getElementById(loadId).remove();
             body.innerHTML += `<div class="msg msg-ai">連線錯誤。</div>`;
