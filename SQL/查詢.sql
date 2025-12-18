@@ -1,8 +1,8 @@
 SELECT * FROM BRAND_PRESENCE
-where name = N'DIOR';
---WHERE location = N'遠百信義 A13';
+--where name = N'DIOR';
+WHERE location = N'大江購物中心';
 
---SELECT * FROM DEPARTMENT_STORE; 
+SELECT * FROM DEPARTMENT_STORE; 
 --WHERE city = N'Taipei';
 
 --BRAND_PRESENCE_Wrong

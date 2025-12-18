@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎄 聖誕尊榮品牌查詢系統</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
     /* ==================== 1. 基礎樣式 (還原聖誕紅風格 + 新字體) ==================== */
     body {
-        /* 保留您喜歡的新字體 */
         font-family: 'Noto Serif TC', 'Microsoft JhengHei', serif;
-        background-color: #fff0f0; /* 還原粉紅背景 */
+        background-color: #fff0f0;
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -28,14 +28,13 @@
         width: 90%;
         max-width: 1000px;
         position: relative;
-        border-top: 8px solid #B00020; /* 還原紅色頂部 */
+        border-top: 8px solid #B00020;
         margin-bottom: 50px;
     }
 
     h2 {
         text-align: center;
         color: #B00020;
-        /* 標題使用新字體 */
         font-family: 'Noto Serif TC', serif;
         font-size: 2.2rem;
         margin-bottom: 2rem;
@@ -94,7 +93,6 @@
         flex-shrink: 0;
     }
 
-    /* Active 卡片還原成您原本習慣的紅框金邊 */
     .mall-card.active {
         opacity: 1 !important;
         transform: scale(1.15) !important;
@@ -112,7 +110,7 @@
         margin: 0 0 10px 0;
         font-size: 1.3rem;
         pointer-events: none;
-        font-family: 'Noto Serif TC', serif; /* 卡片標題也用新字體 */
+        font-family: 'Noto Serif TC', serif;
     }
 
     .mall-card p {
@@ -166,7 +164,7 @@
         font-size: 16px;
         box-sizing: border-box;
         outline: none;
-        font-family: 'Noto Serif TC', sans-serif; /* 輸入框也用新字體 */
+        font-family: 'Noto Serif TC', sans-serif;
     }
     input:focus, select:focus { border-color: #B00020; }
 
@@ -184,10 +182,9 @@
     .btn-search { background-color: #B00020; color: white; }
     .btn-search:hover { background-color: #8C0018; transform: translateY(-2px); }
 
-    /* ==================== 4. AI 視窗 (保留新版配色！) ==================== */
-    /* 按鈕：香檳金 */
+    /* ==================== 4. AI 視窗 (保留新版配色) ==================== */
     .btn-ai {
-        background: #F5EFEB; 
+        background: #F5EFEB;
         color: #8E1600;
         border: 1px solid #E6DCD0;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -225,57 +222,184 @@
         position: fixed; bottom: 20px; right: 20px; width: 360px; height: 520px;
         background: white;
         border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15); /* 陰影較柔和 */
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         z-index: 3000;
         flex-direction: column;
-        border: 2px solid #D4AF37; /* 香檳金邊框 */
+        border: 2px solid #D4AF37;
         overflow: hidden;
         font-family: 'Noto Serif TC', serif;
     }
     .ai-header { 
-        background: #8E1600; /* 深酒紅 */
+        background: #8E1600;
         color: white; 
         padding: 15px; 
-        display: flex; justify-content: space-between; align-items: center; 
+        display: flex; justify-content: space-between; align-items: center;
         font-weight: bold; 
     }
     .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #fffcfc; display: flex; flex-direction: column; gap: 12px; }
     .ai-footer { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; }
     .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
-    .msg-ai { background: #F5EFEB; color: #333; align-self: flex-start; } /* 米色對話框 */
-    .msg-user { background: #8E1600; color: white; align-self: flex-end; } /* 酒紅對話框 */
+    .msg-ai { background: #F5EFEB; color: #333; align-self: flex-start; }
+    .msg-user { background: #8E1600; color: white; align-self: flex-end; }
 
-    /* 其他保留 (手機版適應、樓層樣式) */
+    /* ==================== 7. AI 思考中動畫 ==================== */
+    .dot-animate {
+        display: inline-block;
+        margin-left: 2px;
+        animation: wave 1.3s infinite ease-in-out;
+        color: #D4AF37;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .dot-animate:nth-child(1) { animation-delay: 0s; }
+    .dot-animate:nth-child(2) { animation-delay: 0.1s; }
+    .dot-animate:nth-child(3) { animation-delay: 0.2s; }
+    @keyframes wave {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+    }
+
+    /* ==================== [修正] 側邊欄列表 (解決樓層被卡掉的問題) ==================== */
     #floorView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #fffbf0; z-index: 2000; }
     .floor-layout { display: flex; width: 100%; height: 100%; }
     .floor-sidebar-container { width: 220px; background: #2c3e50; border-right: 4px solid #B00020; display: flex; flex-direction: column; flex-shrink: 0; z-index: 2010; }
     .sidebar-header { padding: 15px; border-bottom: 1px solid #444; background: #2c3e50; }
     .close-floor-btn { width: 100%; background: #c0392b; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; }
     .close-floor-btn:hover { background: #e74c3c; }
-    .floor-btn-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column-reverse; padding-bottom: 50px; justify-content: center; }
-    .floor-btn { padding: 18px 10px; text-align: center; cursor: pointer; font-weight: bold; font-family: 'Georgia', serif; font-size: 1.2rem; border-bottom: 1px solid #444; transition: all 0.2s; color: #ccc; }
+
+    /* ==================== [修正] 側邊欄列表 (完美置中 + 可捲動版) ==================== */
+    .floor-btn-list {
+        flex: 1;
+        overflow-y: auto; /* 確保可以捲動 */
+        
+        display: flex;
+        flex-direction: column-reverse; /* 低樓層在下，高樓層在上 */
+        
+        padding: 0; /* 內距歸零，由按鈕的 margin 控制 */
+    }
+    
+    /* 讓按鈕本身保持彈性 */
+    .floor-btn {
+        flex-shrink: 0; /* 防止變形 */
+        position: relative; 
+        padding: 18px 10px; 
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: 'Georgia', serif;
+        font-size: 1.2rem;
+        border-bottom: 1px solid #444;
+        transition: all 0.2s;
+        color: #ccc;
+        padding-right: 30px; 
+    }
+
+    /* ✨ 關鍵魔法：利用 margin: auto 達成彈性置中 ✨ */
+    /* 針對列表中的第一個元素 (邏輯上的 1F，視覺上的最下面) */
+    .floor-btn:first-child {
+        margin-bottom: auto; /* 把它往上推，遠離底部 */
+    }
+    /* 針對列表中的最後一個元素 (邏輯上的頂樓，視覺上的最上面) */
+    .floor-btn:last-child {
+        margin-top: auto;    /* 把它往下推，遠離頂部 */
+    }
+    /* 當兩邊都 auto 時，整個列表就會懸浮在正中間！ */
+    /* 而當內容太多溢出時，auto 會失效，變成正常的頂底對齊，可正常捲動 */
+
     .floor-btn:hover { background: #444; color: white; }
     .floor-btn.active { background: #B00020; color: #FFD700; font-size: 1.5rem; box-shadow: inset 0 0 15px rgba(0,0,0,0.4); }
+
     .floor-content { flex: 1; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
     .floor-header-sticky { position: sticky; top: 0; background: #fffbf0; z-index: 2005; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+    
     .floor-search-container { display: flex; align-items: center; position: relative; width: 360px; gap: 10px; }
     .floor-search-input-wrapper { flex: 1; position: relative; }
     .floor-search-input { width: 100%; padding: 12px 40px 12px 20px; border: 2px solid #ddd; border-radius: 25px; outline: none; font-size: 1rem; }
     .floor-search-input:focus { border-color: #B00020; }
     .floor-search-clear { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #999; font-weight: bold; display: none; }
     .floor-search-clear:hover { color: #B00020; }
+    
     .btn-floor-query { background-color: transparent; color: #2c3e50; border: 2px solid #ddd; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
     .btn-floor-query:hover { background-color: #f4f4f4; transform: scale(1.05); }
+
     .floor-grid-container { padding: 30px; }
     .brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+    
     .brand-box { aspect-ratio: 1 / 1; background: white; border: 1px solid #e0e0e0; border-radius: 6px; display: flex; justify-content: center; align-items: center; text-align: center; padding: 8px; font-size: 0.9rem; font-weight: 500; color: #333; transition: all 0.3s; cursor: default; }
     .brand-box:hover { transform: translateY(-3px); border: 2px solid #B00020; color: #B00020; }
     .brand-box.highlight-brand { background-color: #fff3e0; border: 3px solid #e65100; color: #e65100; transform: scale(1.15); box-shadow: 0 0 20px rgba(230, 81, 0, 0.4); font-weight: bold; z-index: 10; }
+
+    /* ==================== [修改] 8. 樓層搜尋命中徽章 (完美對齊版 極簡灰氣泡版) ==================== */
+    .floor-match-badge {
+        /* 1. 位置大改：改用 left 定位，讓它永遠跟著中間的數字走 */
+        position: absolute;
+        top: 20%;        /* 稍微高一點 */
+        left: 65%;       /* 從中間往右偏一點點，剛好在數字旁邊 */
+        transform: translateY(0); /* 取消垂直置中，讓它自然浮在上方 */
+
+        /* 2. 配色：完全比照放大鏡按鈕 (白底 + 淺灰框 + 深藍灰字) */
+        background-color: #f4f4f4;
+        border: 2px solid #ddd;  /* 淺灰色邊框 (跟搜尋按鈕一樣) */
+        color: #2c3e50;          /* 深藍灰字 */
+        
+        /* 形狀設定 */
+        border-radius: 8px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        font-size: 0.8rem;
+        font-weight: 800;
+        font-family: 'Arial', sans-serif;
+        
+        /* 陰影稍微淡一點，比較清爽 */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 10;
+        
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* 3. 左下角的指針 (外層淺灰三角形) */
+    .floor-match-badge::before {
+        content: '';
+        position: absolute;
+        left: -8px; 
+        bottom: 4px; 
+        
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-right: 8px solid #ddd; /* 顏色改為淺灰 */
+    }
+
+    /* 4. 左下角的指針 (內層白色三角形，做出空心感) */
+    .floor-match-badge::after {
+        content: '';
+        position: absolute;
+        left: -5px; 
+        bottom: 4px;
+        
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        /* 這裡一定要跟 background-color 一樣是 #f4f4f4 */
+        border-right: 8px solid #f4f4f4; 
+    }
+
+    @keyframes popIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
     @media (max-width: 900px) { .floor-sidebar-container { width: 100px; } .floor-header-sticky { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; } .floor-search-container { width: 100%; } }
 </style>
     
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 </head>
 <body>
 
@@ -364,55 +488,55 @@
     const BASE_URL = 'http://localhost:3000';
 
     /* ============================================================
-   前端測試模式 (Mock Mode) - 開啟後不需要後端也能跑
-   ============================================================ */
-const USE_MOCK = false; // ⬅️ 要接後端時改回 false
+        前端測試模式 (Mock Mode) - 開啟後不需要後端也能跑
+    ============================================================ */
+    const USE_MOCK = true; // ⬅️ 要接後端時改回 false
 
-if (USE_MOCK) {
-    window.fetch = async (url) => {
-        console.log("Mocking API Call:", url);
-        
-        // 1. 模擬百貨清單 (測試輪播與首頁搜尋)
-        if (url.includes('/api/stores') || url.includes('/api/smart-search')) {
-            return {
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: [
-                        { name: "桃園大江購物中心", city: "Taoyuan", address: "桃園市中壢區中園路二段501號", phone: "03-4680999", business_hours: "11:00-22:00", floor_range: "GBF-5F", brand_name: "Nike", floor: "GBF" },
-                        { name: "桃園統領廣場", city: "Taoyuan", address: "桃園市桃園區中正路61號", phone: "03-3362688", business_hours: "11:00-21:30", floor_range: "B2-9F", brand_name: "Adidas", floor: "1F" },
-                        { name: "台北信義新天地 A11", city: "Taipei", address: "台北市信義區松壽路11號", phone: "02-87801000", business_hours: "11:00-21:30", floor_range: "B2-7F", brand_name: "Zara", floor: "2F" }
-                    ]
-                })
-            };
-        }
+    if (USE_MOCK) {
+        window.fetch = async (url) => {
+            console.log("Mocking API Call:", url);
+            
+            // 1. 模擬百貨清單 (測試輪播與首頁搜尋)
+            if (url.includes('/api/stores') || url.includes('/api/smart-search')) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        success: true,
+                        data: [
+                            { name: "桃園大江購物中心", city: "Taoyuan", address: "桃園市中壢區中園路二段501號", phone: "03-4680999", business_hours: "11:00-22:00", floor_range: "GBF-5F", brand_name: "Nike", floor: "GBF" },
+                            { name: "桃園統領廣場", city: "Taoyuan", address: "桃園市桃園區中正路61號", phone: "03-3362688", business_hours: "11:00-21:30", floor_range: "B2-9F", brand_name: "Adidas", floor: "1F" },
+                            { name: "台北信義新天地 A11", city: "Taipei", address: "台北市信義區松壽路11號", phone: "02-87801000", business_hours: "11:00-21:30", floor_range: "B2-7F", brand_name: "Zara", floor: "2F" }
+                        ]
+                    })
+                };
+            }
 
-        // 2. 模擬樓層資料 (測試 GBF 排序與標記持久化)
-        if (url.includes('/api/mall-floors')) {
-            return {
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: {
-                        "GBF": ["Nike", "Uniqlo", "無印良品"],
-                        "1F": ["Samsung", "Starbucks", "Pandora"],
-                        "2F": ["Zara", "H&M"]
-                    }
-                })
-            };
-        }
+            // 2. 模擬樓層資料 (測試 GBF 排序與標記持久化)
+            if (url.includes('/api/mall-floors')) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        success: true,
+                        data: {
+                            "GBF": ["Nike", "Uniqlo", "無印良品"],
+                            "1F": ["Samsung", "Starbucks", "Pandora"],
+                            "2F": ["Zara", "H&M"]
+                        }
+                    })
+                };
+            }
 
-        // 3. 模擬 AI 顧問回覆
-        if (url.includes('/api/ai-recommend')) {
-            return {
-                ok: true,
-                json: async () => ({
-                    reply: "### 🎅 聖誕購物建議\n根據您的需求，我推薦前往 **桃園大江購物中心**：\n* **位置**：GBF 樓層有 Nike。\n* **營業時間**：11:00-22:00。\n\n那邊還有全台最大的美食街喔！"
-                })
-            };
-        }
-    };
-}
+            // 3. 模擬 AI 顧問回覆
+            if (url.includes('/api/ai-recommend')) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        reply: "### 🎅 聖誕購物建議\n根據您的需求，我推薦前往 **桃園大江購物中心**：\n* **位置**：GBF 樓層有 Nike。\n* **營業時間**：11:00-22:00。\n\n那邊還有全台最大的美食街喔！"
+                    })
+                };
+            }
+        };
+    }
 
     // ==========================================================================
     // 1. 🎡 [修正版] Triple Buffer 無縫輪播引擎
@@ -423,7 +547,6 @@ if (USE_MOCK) {
     let currentIndex = 0;
     let isCarouselAnimating = false;
     let autoPlayTimer;
-
     const CARD_WIDTH = 250;
     const CARD_GAP = 25; // CSS 中的 margin-right
     const STEP = CARD_WIDTH + CARD_GAP;
@@ -450,10 +573,8 @@ if (USE_MOCK) {
     // 渲染：Triple Buffer [Set 1][Set 2][Set 3]
     function renderCarouselTripleBuffer() {
         const track = document.getElementById('mallTrack');
-        
         // 複製三份
         carouselData = [...rawMallData, ...rawMallData, ...rawMallData];
-        
         track.innerHTML = carouselData.map((mall, i) => `
             <div class="mall-card" data-index="${i}" onclick="handleCardClick(this, '${mall.name}')">
                 <h4>${mall.name}</h4>
@@ -461,10 +582,10 @@ if (USE_MOCK) {
                 <p style="font-size:0.8rem; margin-top:5px; opacity:0.7;">${mall.address}</p>
             </div>
         `).join('');
-
         // 初始位置設定在中間那組 (Set 2) 的開頭
         currentIndex = realCount; 
-        updateCarouselView(false); // 初始渲染不需動畫
+        updateCarouselView(false);
+        // 初始渲染不需動畫
     }
 
     // 核心物理公式更新 View
@@ -474,17 +595,14 @@ if (USE_MOCK) {
         const cards = document.querySelectorAll('.mall-card');
         
         if (!track || !container) return;
-
         // 計算置中 Offset
         // 公式：偏移量 = (容器寬度 / 2) - (單張卡片寬度 / 2) - (目前索引 * 步進距離)
         const containerCenter = container.offsetWidth / 2;
         const cardCenter = CARD_WIDTH / 2;
         const offset = containerCenter - cardCenter - (currentIndex * STEP);
-
         // 設定動畫屬性
         track.style.transition = withAnimation ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
         track.style.transform = `translateX(${offset}px)`;
-
         // 更新 Active 樣式 (權重覆蓋)
         cards.forEach((card, idx) => {
             if (idx === currentIndex) {
@@ -500,11 +618,9 @@ if (USE_MOCK) {
     function moveCarousel(dir) {
         // 1. 如果正在動畫中，忽略這次點擊
         if (isCarouselAnimating) return;
-
         // 2. [關鍵修正] 無論是手動按還是自動跑，一旦移動就「重置計時器」
         // 這樣可以確保按完按鈕後，會乖乖重新倒數 3 秒，不會馬上亂跳
-        startAutoPlay(); 
-
+        startAutoPlay();
         isCarouselAnimating = true;
         currentIndex += dir;
         updateCarouselView(true);
@@ -513,7 +629,6 @@ if (USE_MOCK) {
     // 瞬移監聽 (Teleport Logic)
     function handleTransitionEnd() {
         isCarouselAnimating = false;
-        
         // 如果跑到 Set 3 (右側緩衝區)，瞬移回 Set 2
         if (currentIndex >= realCount * 2) {
             currentIndex = currentIndex - realCount;
@@ -549,7 +664,6 @@ if (USE_MOCK) {
         const resultArea = document.getElementById('resultArea');
         
         resultArea.innerHTML = "<p style='width:100%;text-align:center;color:#666;'>⏳ 搜尋中...</p>";
-
         try {
             const apiUrl = `${BASE_URL}/api/smart-search?city=${city}&brand=${encodeURIComponent(brand)}`;
             const res = await fetch(apiUrl);
@@ -572,14 +686,12 @@ if (USE_MOCK) {
                     mallMap.get(row.storeName).foundBrands.push(`${row.brand_name} (${row.floor})`);
                 }
             });
-
             // 排序：命中數量多 -> 少
             const sortedMalls = Array.from(mallMap.values()).sort((a, b) => {
                 const countA = new Set(a.foundBrands).size;
                 const countB = new Set(b.foundBrands).size;
                 return countB - countA;
             });
-
             sortedMalls.forEach(mall => {
                 const phone = mall.phone ? `📞 ${mall.phone}` : "暫無電話";
                 const hours = mall.business_hours ? `🕒 ${mall.business_hours}` : "營業時間未提供";
@@ -622,12 +734,12 @@ if (USE_MOCK) {
     }
 
     // ==========================================================================
-    // 3. 樓層導覽 (GBF 排序 + 持久化搜尋)
+    // 3. 樓層導覽 (GBF 排序 + 持久化搜尋 + 多品牌搜尋 + 樓層徽章註記)
     // ==========================================================================
     let currentFloorData = {}; 
     let currentMallName = ""; 
-    // 用於記錄「全域」搜尋關鍵字，以便切換樓層時重繪紅框
-    let persistentSearchKeyword = "";
+    // 🔴 [修改] 改為陣列，以支援多品牌 (例如 ["nike", "adidas"])
+    let persistentSearchKeywords = [];
 
     async function showFloorPlan(storeName) {
         document.getElementById('mainView').style.display = 'none';
@@ -635,10 +747,10 @@ if (USE_MOCK) {
         document.getElementById('floorTitle').innerText = storeName;
         currentMallName = storeName;
 
-        // 重置樓層搜尋輸入，但如果有外部帶入的意圖可在此擴充
+        // 重置搜尋狀態
         document.getElementById('floorSearchInput').value = "";
         document.getElementById('floorSearchInput').placeholder = `在 ${storeName} 內搜尋...`;
-        persistentSearchKeyword = ""; 
+        persistentSearchKeywords = []; // 清空關鍵字
         checkFloorSearch();
         
         const floorBtnList = document.getElementById('floorBtnList');
@@ -646,7 +758,6 @@ if (USE_MOCK) {
         
         floorBtnList.innerHTML = "<div style='color:#ccc;text-align:center;padding:10px;'>載入中...</div>";
         grid.innerHTML = "";
-
         try {
             const res = await fetch(`${BASE_URL}/api/mall-floors?name=${encodeURIComponent(storeName)}`);
             const json = await res.json();
@@ -659,21 +770,19 @@ if (USE_MOCK) {
 
             const floors = json.data;
             currentFloorData = floors;
-
             // 樓層排序 Key
             const floorKeys = Object.keys(floors).sort((a, b) => {
                 return getFloorValue(a) - getFloorValue(b);
             });
-
             floorKeys.forEach(f => {
                 const btn = document.createElement('div');
                 btn.className = 'floor-btn';
-                btn.innerText = f;
+                // 🔴 [修改] 這裡不要只塞純文字，預留 HTML 結構給徽章用
+                btn.innerHTML = `${f}`; 
                 btn.id = `btn-floor-${f}`; 
                 btn.onclick = () => selectFloor(f, btn);
                 floorBtnList.appendChild(btn);
             });
-
             // 預設選取邏輯
             if (document.getElementById('btn-floor-1F')) {
                 document.getElementById('btn-floor-1F').click();
@@ -688,6 +797,11 @@ if (USE_MOCK) {
 
     // 樓層切換
     function selectFloor(floorName, btnElement) {
+        // 如果沒有傳入 btnElement (例如從搜尋觸發)，嘗試自動抓取
+        if (!btnElement) {
+            btnElement = document.getElementById(`btn-floor-${floorName}`);
+        }
+
         document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
         if(btnElement) btnElement.classList.add('active');
         
@@ -710,23 +824,95 @@ if (USE_MOCK) {
             card.innerText = brand;
             card.dataset.name = brand; 
 
-            // 持久化：檢查是否有搜尋關鍵字
-            if (persistentSearchKeyword && brand.toLowerCase().includes(persistentSearchKeyword)) {
-                card.classList.add('highlight-brand');
+            // 🔴 [修改] 多關鍵字匹配邏輯
+            // 只要品牌名稱包含「任何一個」搜尋關鍵字，就高亮
+            if (persistentSearchKeywords.length > 0) {
+                const isMatch = persistentSearchKeywords.some(keyword => 
+                    brand.toLowerCase().includes(keyword)
+                );
+                if (isMatch) {
+                    card.classList.add('highlight-brand');
+                }
             }
 
             grid.appendChild(card);
         });
     }
 
-    // 修正後的 GBF 排序邏輯
+    // 🔴 [新增] 樓層內搜尋 (支援多品牌 + 徽章統計)
+    function searchInFloor() {
+        const rawInput = document.getElementById('floorSearchInput').value.trim().toLowerCase();
+        if (!rawInput) {
+             clearFloorSearch();
+             return;
+        }
+
+        // 1. 解析關鍵字 (支援空格、逗號分隔) => ["nike", "adidas"]
+        persistentSearchKeywords = rawInput.split(/[\s,，、]+/).filter(k => k);
+        if (persistentSearchKeywords.length === 0) return;
+
+        let totalMatches = 0;
+        // 用來收集所有命中的樓層，以便最後排序跳轉
+        let matchedFloorsSet = new Set();
+        // 2. 遍歷所有樓層，計算命中數並更新徽章
+        for (const floorName of Object.keys(currentFloorData)) {
+            const brands = currentFloorData[floorName];
+            // 計算該樓層有幾個品牌中了關鍵字
+            const matchCount = brands.filter(brand => 
+                persistentSearchKeywords.some(keyword => brand.toLowerCase().includes(keyword))
+            ).length;
+            // 更新側邊欄徽章
+            updateFloorBadge(floorName, matchCount);
+            if (matchCount > 0) {
+                totalMatches += matchCount;
+                matchedFloorsSet.add(floorName);
+            }
+        }
+
+        // 3. 自動跳轉邏輯
+        if (totalMatches > 0) {
+            // 將命中的樓層轉為陣列並排序
+            const matchedFloors = Array.from(matchedFloorsSet);
+            matchedFloors.sort((a, b) => getFloorValue(a) - getFloorValue(b));
+
+            // 跳轉到排序後的第一個命中樓層
+            const targetFloor = matchedFloors[0];
+            const btn = document.getElementById(`btn-floor-${targetFloor}`);
+            if (btn) btn.click(); 
+        } else {
+            alert(`在 ${currentMallName} 找不到與「${rawInput}」相關的品牌。`);
+        }
+    }
+
+    // 🔴 [修改] 更新樓層按鈕上的徽章 (懸浮圓圈版)
+    function updateFloorBadge(floorName, count) {
+        const btn = document.getElementById(`btn-floor-${floorName}`);
+        if (!btn) return;
+
+        // 嘗試找出已經存在的徽章 span
+        let badgeSpan = btn.querySelector('.floor-match-badge');
+        if (count > 0) {
+            // 如果有命中，但還沒有徽章 span，就創建一個塞進去
+            if (!badgeSpan) {
+                badgeSpan = document.createElement('span');
+                badgeSpan.className = 'floor-match-badge';
+                btn.appendChild(badgeSpan);
+            }
+            // 只更新裡面的數字 (不需要 💬 emoji 了，紅圓圈本身就是圖示)
+            badgeSpan.innerText = count;
+        } else {
+            // 如果計數歸零，且目前有徽章顯示，就把它移除掉
+            if (badgeSpan) {
+                badgeSpan.remove();
+            }
+        }
+    }
+
+    // 修正後的 GBF 排序邏輯 (保持不變)
     function getFloorValue(f) {
         f = f.toUpperCase().trim();
-        // GBF 要在 1F 下面 (0.1)，但又要比 B1 (-1) 大 -> 設定為 0
-        // 1F = 1, B1 = -1. GBF = 0
-        if (f === 'GBF') return 0; 
+        if (f === 'GBF') return 0;
         if (f === 'G') return 0;
-        
         if (f.startsWith('B')) {
             const num = parseInt(f.replace('B', ''));
             return isNaN(num) ? -100 : -num; 
@@ -743,38 +929,18 @@ if (USE_MOCK) {
         const val = document.getElementById('floorSearchInput').value;
         document.getElementById('floorSearchClear').style.display = val ? 'block' : 'none';
         
-        // 只有當 input 為空時才清空 highlight
+        // 只有當 input 為空時才完全清空
         if (!val) {
-             persistentSearchKeyword = "";
-             refreshCurrentFloor();
+             clearFloorSearch();
         }
     }
 
-    function searchInFloor() {
-        const keyword = document.getElementById('floorSearchInput').value.trim().toLowerCase();
-        if (!keyword) return;
-
-        persistentSearchKeyword = keyword; // 儲存關鍵字
-        
-        // 找出含有該關鍵字的樓層
-        let matchedFloors = [];
-        for (const [floor, brands] of Object.entries(currentFloorData)) {
-            if (brands.some(b => b.toLowerCase().includes(keyword))) {
-                matchedFloors.push(floor);
-            }
-        }
-
-        if (matchedFloors.length > 0) {
-            // 排序找到的樓層
-            matchedFloors.sort((a, b) => getFloorValue(a) - getFloorValue(b));
-            
-            // 跳轉到第一個命中樓層
-            const targetFloor = matchedFloors[0];
-            const btn = document.getElementById(`btn-floor-${targetFloor}`);
-            if (btn) btn.click(); // click 會觸發 selectFloor -> 進而觸發 highlight
-        } else {
-            alert(`在 ${currentMallName} 找不到與「${keyword}」相關的品牌。`);
-        }
+    function clearFloorSearch() {
+        document.getElementById('floorSearchInput').value = '';
+        persistentSearchKeywords = []; // 清空關鍵字陣列
+        // 清除所有樓層的徽章
+        Object.keys(currentFloorData).forEach(f => updateFloorBadge(f, 0));
+        refreshCurrentFloor();
     }
 
     function refreshCurrentFloor() {
@@ -783,37 +949,20 @@ if (USE_MOCK) {
         if(currentFloor) selectFloor(currentFloor, currentBtn);
     }
 
-    function clearFloorSearch() {
-        document.getElementById('floorSearchInput').value = '';
-        persistentSearchKeyword = "";
-        checkFloorSearch();
+    function closeFloorView() {
+        const mainView = document.getElementById('mainView');
+        const floorView = document.getElementById('floorView');
+        
+        floorView.style.display = 'none';
+        mainView.style.display = 'block';
+        
+        clearFloorSearch();
+        setTimeout(() => {
+            isCarouselAnimating = false; 
+            updateCarouselView(false);
+            startAutoPlay();
+        }, 50);
     }
-
-    // 修正後的關閉樓層函式
-// 修正後的關閉樓層函式：解決輪播卡死與按鈕失效
-function closeFloorView() {
-    const mainView = document.getElementById('mainView');
-    const floorView = document.getElementById('floorView');
-    
-    // 1. 切換畫面
-    floorView.style.display = 'none';
-    mainView.style.display = 'block';
-
-    // 2. 清除樓層搜尋狀態
-    clearFloorSearch();
-
-    // 3. 延遲執行以確保畫面渲染完成
-    setTimeout(() => {
-        // [關鍵修正] 強制重置動畫鎖定狀態，讓左右按鈕可以再次被點擊
-        isCarouselAnimating = false; 
-
-        // 重新定位輪播圖到正中間 (無動畫模式)
-        updateCarouselView(false);
-
-        // [關鍵修正] 重新啟動自動輪播計時器
-        startAutoPlay();
-    }, 50);
-}
 
     // ==========================================================================
     // 4. 其他輔助函式
@@ -843,17 +992,24 @@ function closeFloorView() {
         body.scrollTop = body.scrollHeight;
 
         const loadId = 'loading-' + Date.now();
-        body.innerHTML += `<div id="${loadId}" class="msg msg-ai">🤖 思考中...</div>`;
+        body.innerHTML += `
+            <div id="${loadId}" class="msg msg-ai">
+                🤖 思考中
+                <span class="dot-animate">.</span>
+                <span class="dot-animate">.</span>
+                <span class="dot-animate">.</span>
+            </div>
+        `;
+        body.scrollTop = body.scrollHeight;
 
         try {
             const res = await fetch(`${BASE_URL}/api/ai-recommend?q=${encodeURIComponent(q)}`);
             const json = await res.json();
             document.getElementById(loadId).remove();
-            // ✅ 新的寫法 (支援 Markdown 粗體、清單與換行)
             body.innerHTML += `<div class="msg msg-ai">${marked.parse(json.reply)}</div>`;
         } catch (e) {
             document.getElementById(loadId).remove();
-            body.innerHTML += `<div class="msg msg-ai">連線錯誤。</div>`;
+            body.innerHTML += `<div class="msg msg-ai">連線錯誤，請稍後再試。</div>`;
         }
         body.scrollTop = body.scrollHeight;
     }
@@ -862,7 +1018,6 @@ function closeFloorView() {
     document.addEventListener('DOMContentLoaded', () => {
         initMallCarousel();
     });
-    
     window.addEventListener('resize', () => {
         updateCarouselView(false); // 視窗縮放時重新計算置中，但不播放動畫
     });
