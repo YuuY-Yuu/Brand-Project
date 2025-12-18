@@ -361,6 +361,57 @@
 <script>
     const BASE_URL = 'http://localhost:3000';
 
+    /* ============================================================
+   前端測試模式 (Mock Mode) - 開啟後不需要後端也能跑
+   ============================================================ */
+const USE_MOCK = true; // ⬅️ 要接後端時改回 false
+
+if (USE_MOCK) {
+    window.fetch = async (url) => {
+        console.log("Mocking API Call:", url);
+        
+        // 1. 模擬百貨清單 (測試輪播與首頁搜尋)
+        if (url.includes('/api/stores') || url.includes('/api/smart-search')) {
+            return {
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    data: [
+                        { name: "桃園大江購物中心", city: "Taoyuan", address: "桃園市中壢區中園路二段501號", phone: "03-4680999", business_hours: "11:00-22:00", floor_range: "GBF-5F", brand_name: "Nike", floor: "GBF" },
+                        { name: "桃園統領廣場", city: "Taoyuan", address: "桃園市桃園區中正路61號", phone: "03-3362688", business_hours: "11:00-21:30", floor_range: "B2-9F", brand_name: "Adidas", floor: "1F" },
+                        { name: "台北信義新天地 A11", city: "Taipei", address: "台北市信義區松壽路11號", phone: "02-87801000", business_hours: "11:00-21:30", floor_range: "B2-7F", brand_name: "Zara", floor: "2F" }
+                    ]
+                })
+            };
+        }
+
+        // 2. 模擬樓層資料 (測試 GBF 排序與標記持久化)
+        if (url.includes('/api/mall-floors')) {
+            return {
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    data: {
+                        "GBF": ["Nike", "Uniqlo", "無印良品"],
+                        "1F": ["Samsung", "Starbucks", "Pandora"],
+                        "2F": ["Zara", "H&M"]
+                    }
+                })
+            };
+        }
+
+        // 3. 模擬 AI 顧問回覆
+        if (url.includes('/api/ai-recommend')) {
+            return {
+                ok: true,
+                json: async () => ({
+                    reply: "### 🎅 聖誕購物建議\n根據您的需求，我推薦前往 **桃園大江購物中心**：\n* **位置**：GBF 樓層有 Nike。\n* **營業時間**：11:00-22:00。\n\n那邊還有全台最大的美食街喔！"
+                })
+            };
+        }
+    };
+}
+
     // ==========================================================================
     // 1. 🎡 [修正版] Triple Buffer 無縫輪播引擎
     // ==========================================================================

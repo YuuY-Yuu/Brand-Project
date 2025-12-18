@@ -10,8 +10,8 @@
 --    business_hours = N'11:00 — 22:00'
 --WHERE name = N'大江購物中心 MetroWalk';
 
-UPDATE BRAND_PRESENCE
-SET location = N'大江購物中心'
-WHERE location = N'大江購物中心MetroWalk';
+UPDATE DEPARTMENT_STORE
+SET name = N'大江購物中心'
+WHERE name = N'大江購物中心 MetroWalk';
 
 SELECT * FROM BRAND_PRESENCE
