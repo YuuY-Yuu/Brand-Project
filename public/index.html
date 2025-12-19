@@ -398,6 +398,50 @@
     }
 
     @media (max-width: 900px) { .floor-sidebar-container { width: 100px; } .floor-header-sticky { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; } .floor-search-container { width: 100%; } }
+
+    /* ==================== 9. 類別標題樣式 (新增) ==================== */
+    .category-section {
+        margin-bottom: 30px;
+        width: 100%; /* 確保佔滿整行 */
+    }
+    
+    .category-title {
+        font-family: 'Noto Serif TC', serif;
+        font-size: 1.2rem;
+        color: #8E1600; /* 酒紅標題 */
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* 標題前加一個香檳金小裝飾塊 */
+    .category-title::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 20px;
+        background-color: #D4AF37; 
+        margin-right: 10px;
+        border-radius: 3px;
+    }
+
+/* ==================== 10. 樓層頂部類別標籤 (新增) ==================== */
+    .floor-cat-tag {
+        display: inline-block;
+        font-size: 0.85rem;
+        color: #555;
+        background-color: #f0f0f0; /* 淺灰底 */
+        padding: 2px 10px;
+        border-radius: 15px;       /* 圓角 */
+        border: 1px solid #ddd;
+        vertical-align: middle;
+        white-space: nowrap;       /* 防止文字換行 */
+    }
+
+
 </style>
     
 </head>
@@ -454,6 +498,7 @@
                     <h2 id="floorTitle" style="margin:0; border:none; text-align:left; font-size:1.7rem;">百貨名稱</h2>
                     <span style="color:#666;">目前樓層：</span>
                     <span id="currentFloorLabel" style="color:#B00020; font-weight:bold; font-size:1.5rem;">1F</span>
+                    <span id="floorCategoryTags" style="margin-left: 12px; display: inline-flex; gap: 5px; flex-wrap: wrap;"></span>
                 </div>
                 <div class="floor-search-container">
                     <div class="floor-search-input-wrapper">
@@ -490,7 +535,7 @@
     /* ============================================================
         前端測試模式 (Mock Mode) - 開啟後不需要後端也能跑
     ============================================================ */
-    const USE_MOCK = true; // ⬅️ 要接後端時改回 false
+    const USE_MOCK = false; // ⬅️ 要接後端時改回 false
 
     if (USE_MOCK) {
         window.fetch = async (url) => {
@@ -656,24 +701,89 @@
     }
 
     // ==========================================================================
-    // 2. 搜尋功能 (排序與欄位需求)
+    // 2. [修改版]搜尋功能 (排序與欄位需求+傳遞搜尋關鍵字+自動糾錯提示 + 清除Loading + 傳遞正確參數)
     // ==========================================================================
     async function smartSearch() {
         const city = document.getElementById('citySelect').value;
         const brand = document.getElementById('brandInput').value.trim();
         const resultArea = document.getElementById('resultArea');
         
-        resultArea.innerHTML = "<p style='width:100%;text-align:center;color:#666;'>⏳ 搜尋中...</p>";
+        // 1. 顯示 Loading 狀態
+        resultArea.innerHTML = "<p style='width:100%;text-align:center;color:#666;font-size:1.2rem;padding:20px;'>⏳ 搜尋中...</p>";
+
         try {
             const apiUrl = `${BASE_URL}/api/smart-search?city=${city}&brand=${encodeURIComponent(brand)}`;
             const res = await fetch(apiUrl);
             const json = await res.json();
             const data = json.data || [];
+            
+            // 取得後端的糾錯建議
+            const suggestion = json.suggestion; 
 
-            resultArea.innerHTML = "";
+            // 2. ✨ 關鍵：徹底清空結果區
+            resultArea.innerHTML = ""; 
+
+            // ==================== [新增] 3. 找不到資料時，推薦 AI ====================
             if (data.length === 0) {
-                resultArea.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:20px;color:#888;'>❌ 找不到相關資料</div>";
+                // 處理引號，避免 onclick 報錯
+                // 🔴 [修改] 超強防呆版：同時處理 反斜線(\)、單引號(') 與 雙引號(")
+                // replace(/"/g, '&quot;') 是關鍵！它能避免 HTML 的 onclick 被截斷
+                const safeBrand = brand.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
+                resultArea.innerHTML = `
+                    <div style='grid-column:1/-1; text-align:center; padding:40px 20px; color:#666; animation: fadeIn 0.5s;'>
+                        <div style="font-size: 3rem; margin-bottom: 15px;">🤔</div>
+                        <h3 style="color:#555; margin-bottom:10px; font-family:'Noto Serif TC', serif;">找不到相關結果</h3>
+                        <p style="margin-bottom: 25px;">搜尋不到「<span style="color:#B00020; font-weight:bold;">${brand}</span>」的資料。</p>
+                        
+                        <div style="
+                            display:inline-block; 
+                            padding: 20px 30px; 
+                            background: #fffbf0; 
+                            border: 2px dashed #D4AF37; 
+                            border-radius: 15px;
+                            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+                        ">
+                            <p style="margin:0 0 15px 0; color:#8E1600; font-weight:bold; font-size: 1.1rem;">
+                                🎄 聖誕老公公可能有藏起來？
+                            </p>
+                            <p style="margin:0 0 15px 0; color:#666; font-size: 0.95rem;">
+                                試試看問問聰明的 AI 顧問，它或許知道！
+                            </p>
+                            <button class="btn-ai" onclick="toggleAIWithQuery('${safeBrand}')" style="padding:10px 25px; font-size:1rem; cursor:pointer;">
+                                🪄 呼叫 AI 幫我找
+                            </button>
+                        </div>
+                    </div>
+                `;
                 return;
+            }
+
+           // 4. 如果有自動糾錯，顯示黃色提示框 + AI 按鈕
+            if (suggestion) {
+                // 處理引號，避免按鈕報錯
+                // 🔴 [修改] 強化版防呆：同時處理 反斜線(\) 和 單引號(')
+                // replace(/"/g, '&quot;') 是關鍵！它能避免 HTML 的 onclick 被截斷
+                const safeBrand = brand.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                resultArea.innerHTML += `
+                    <div style="grid-column: 1 / -1; background: #FFF3E0; color: #E65100; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #FF9800; animation: fadeIn 0.5s; display:flex; flex-direction:column; gap:10px;">
+                        
+                        <div style="font-size:1.05rem;">
+                            💡 找不到「<strong>${brand}</strong>」，系統為您顯示「<strong>${suggestion}</strong>」的結果。
+                        </div>
+
+                        <div style="border-top: 1px dashed #FFB74D; padding-top: 8px; display:flex; align-items:center; justify-content:space-between;">
+                            <span style="font-size:0.9rem; color:#d84315;">
+                                找的不是這個？
+                            </span>
+                            <button class="btn-ai" onclick="toggleAIWithQuery('${safeBrand}')" style="padding: 5px 15px; font-size: 0.9rem; background:white; border:1px solid #FF9800;">
+                                🪄 問問 AI「${brand}」在哪
+                            </button>
+                        </div>
+
+                    </div>
+                `;
             }
 
             // 資料整理
@@ -682,16 +792,21 @@
                 if (!mallMap.has(row.storeName)) {
                     mallMap.set(row.storeName, { ...row, foundBrands: [] });
                 }
-                if (brand && row.brand_name) {
+                // 使用 suggestion 或原 brand 來判斷哪些是命中品牌
+                const targetBrand = suggestion || brand;
+                if (targetBrand && row.brand_name) {
                     mallMap.get(row.storeName).foundBrands.push(`${row.brand_name} (${row.floor})`);
                 }
             });
+
             // 排序：命中數量多 -> 少
             const sortedMalls = Array.from(mallMap.values()).sort((a, b) => {
                 const countA = new Set(a.foundBrands).size;
                 const countB = new Set(b.foundBrands).size;
                 return countB - countA;
             });
+
+            // 渲染卡片
             sortedMalls.forEach(mall => {
                 const phone = mall.phone ? `📞 ${mall.phone}` : "暫無電話";
                 const hours = mall.business_hours ? `🕒 ${mall.business_hours}` : "營業時間未提供";
@@ -711,6 +826,10 @@
                     `;
                 }
 
+                // 決定傳遞給下一頁的關鍵字 (如果有糾錯，就傳正確的；否則傳原本的)
+                // 並處理單引號與反斜線跳脫問題
+                const finalSearchKeyword = (suggestion || brand).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+               
                 resultArea.innerHTML += `
                     <div class="result-card">
                         <h4>🎄 ${mall.storeName}</h4>
@@ -720,7 +839,7 @@
                         <p class="info" style="color:#B00020; font-weight:bold;">${floorRange}</p>
                         ${brandHtml}
                         <button class="btn-search" style="margin-top:15px; width:100%; font-size:0.9rem;" 
-                            onclick="showFloorPlan('${mall.storeName}')">
+                            onclick="showFloorPlan('${mall.storeName}', '${finalSearchKeyword}')">
                             查看完整樓層
                         </button>
                     </div>
@@ -729,7 +848,7 @@
 
         } catch (e) {
             console.error(e);
-            resultArea.innerHTML = `<p style='color:red;'>錯誤：${e.message}</p>`;
+            resultArea.innerHTML = `<p style='color:red;width:100%;text-align:center;'>錯誤：${e.message}</p>`;
         }
     }
 
@@ -741,23 +860,28 @@
     // 🔴 [修改] 改為陣列，以支援多品牌 (例如 ["nike", "adidas"])
     let persistentSearchKeywords = [];
 
-    async function showFloorPlan(storeName) {
+    // [修改版] 樓層導覽初始化 (支援帶入搜尋關鍵字)
+    // 增加第二個參數 initialKeyword，預設為空字串
+    async function showFloorPlan(storeName, initialKeyword = "") {
         document.getElementById('mainView').style.display = 'none';
         document.getElementById('floorView').style.display = 'block';
         document.getElementById('floorTitle').innerText = storeName;
         currentMallName = storeName;
 
-        // 重置搜尋狀態
-        document.getElementById('floorSearchInput').value = "";
-        document.getElementById('floorSearchInput').placeholder = `在 ${storeName} 內搜尋...`;
-        persistentSearchKeywords = []; // 清空關鍵字
-        checkFloorSearch();
+        // 1. 設定搜尋框的值
+        const searchInput = document.getElementById('floorSearchInput');
+        searchInput.value = initialKeyword;
+        searchInput.placeholder = `在 ${storeName} 內搜尋...`;
+        
+        // 根據是否有值來顯示/隱藏清除按鈕
+        checkFloorSearch(); 
         
         const floorBtnList = document.getElementById('floorBtnList');
         const grid = document.getElementById('brandGrid');
         
         floorBtnList.innerHTML = "<div style='color:#ccc;text-align:center;padding:10px;'>載入中...</div>";
-        grid.innerHTML = "";
+        grid.innerHTML = ""; // 先清空
+
         try {
             const res = await fetch(`${BASE_URL}/api/mall-floors?name=${encodeURIComponent(storeName)}`);
             const json = await res.json();
@@ -770,24 +894,35 @@
 
             const floors = json.data;
             currentFloorData = floors;
+
             // 樓層排序 Key
             const floorKeys = Object.keys(floors).sort((a, b) => {
                 return getFloorValue(a) - getFloorValue(b);
             });
+
+            // 生成樓層按鈕
             floorKeys.forEach(f => {
                 const btn = document.createElement('div');
                 btn.className = 'floor-btn';
-                // 🔴 [修改] 這裡不要只塞純文字，預留 HTML 結構給徽章用
                 btn.innerHTML = `${f}`; 
                 btn.id = `btn-floor-${f}`; 
                 btn.onclick = () => selectFloor(f, btn);
                 floorBtnList.appendChild(btn);
             });
-            // 預設選取邏輯
-            if (document.getElementById('btn-floor-1F')) {
-                document.getElementById('btn-floor-1F').click();
-            } else if (floorKeys.length > 0) {
-                document.getElementById(`btn-floor-${floorKeys[0]}`).click();
+
+            // 2. 決定下一步動作 (自動搜尋 或 預設點擊)
+            if (initialKeyword) {
+                // ✨ 關鍵邏輯：如果有帶入關鍵字，直接執行搜尋！
+                // searchInFloor 會負責：計算徽章、篩選樓層、跳轉到命中樓層、高亮品牌
+                searchInFloor();
+            } else {
+                // 沒有關鍵字，才執行原本的預設邏輯 (清空搜尋狀態，點擊 1F)
+                persistentSearchKeywords = [];
+                if (document.getElementById('btn-floor-1F')) {
+                    document.getElementById('btn-floor-1F').click();
+                } else if (floorKeys.length > 0) {
+                    document.getElementById(`btn-floor-${floorKeys[0]}`).click();
+                }
             }
 
         } catch (e) {
@@ -796,8 +931,8 @@
     }
 
     // 樓層切換
+    // [修改版] 樓層切換 (支援類別顯示 + 頂部類別標籤)
     function selectFloor(floorName, btnElement) {
-        // 如果沒有傳入 btnElement (例如從搜尋觸發)，嘗試自動抓取
         if (!btnElement) {
             btnElement = document.getElementById(`btn-floor-${floorName}`);
         }
@@ -807,39 +942,71 @@
         
         document.getElementById('currentFloorLabel').innerText = floorName;
 
-        const grid = document.getElementById('brandGrid');
-        grid.innerHTML = "";
+        // ==================== 1. 更新頂部類別標籤 (新增功能) ====================
+        const tagContainer = document.getElementById('floorCategoryTags');
+        const categories = currentFloorData[floorName];
         
-        const brands = currentFloorData[floorName] || [];
+        if (tagContainer) { 
+            // 清空舊標籤
+            tagContainer.innerHTML = "";
+            
+            if (categories && Object.keys(categories).length > 0) {
+                // 取出所有類別名稱，製成標籤
+                const catNames = Object.keys(categories);
+                tagContainer.innerHTML = catNames.map(cat => 
+                    `<span class="floor-cat-tag">${cat}</span>`
+                ).join('');
+            }
+        }
+        // ====================================================================
+
+        const container = document.getElementById('brandGrid');
+        container.innerHTML = "";
         
-        if (brands.length === 0) {
-            grid.innerHTML = "<div style='grid-column:1/-1;text-align:center;color:#999;'>本樓層無資料</div>";
+        if (!categories || Object.keys(categories).length === 0) {
+            container.innerHTML = "<div style='text-align:center;color:#999;width:100%;'>本樓層無資料</div>";
             return;
         }
 
-        // 渲染品牌方塊
-        brands.forEach(brand => {
-            const card = document.createElement('div');
-            card.className = 'brand-box';
-            card.innerText = brand;
-            card.dataset.name = brand; 
+        container.style.display = 'block'; 
 
-            // 🔴 [修改] 多關鍵字匹配邏輯
-            // 只要品牌名稱包含「任何一個」搜尋關鍵字，就高亮
-            if (persistentSearchKeywords.length > 0) {
-                const isMatch = persistentSearchKeywords.some(keyword => 
-                    brand.toLowerCase().includes(keyword)
-                );
-                if (isMatch) {
-                    card.classList.add('highlight-brand');
+        // 遍歷所有類別並建立區塊
+        for (const [catName, brands] of Object.entries(categories)) {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            
+            const title = document.createElement('div');
+            title.className = 'category-title';
+            title.innerText = catName;
+            section.appendChild(title);
+            
+            const grid = document.createElement('div');
+            grid.className = 'brand-grid'; 
+            
+            brands.forEach(brand => {
+                const card = document.createElement('div');
+                card.className = 'brand-box';
+                card.innerText = brand;
+                card.dataset.name = brand; 
+
+                // 搜尋高亮邏輯
+                if (persistentSearchKeywords.length > 0) {
+                    const isMatch = persistentSearchKeywords.some(keyword => 
+                        brand.toLowerCase().includes(keyword)
+                    );
+                    if (isMatch) {
+                        card.classList.add('highlight-brand');
+                    }
                 }
-            }
+                grid.appendChild(card);
+            });
 
-            grid.appendChild(card);
-        });
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
     }
 
-    // 🔴 [新增] 樓層內搜尋 (支援多品牌 + 徽章統計)
+    // 🔴 [修改版] 樓層內搜尋 (支援多品牌 + 徽章統計+適應分類結構)
     function searchInFloor() {
         const rawInput = document.getElementById('floorSearchInput').value.trim().toLowerCase();
         if (!rawInput) {
@@ -847,35 +1014,40 @@
              return;
         }
 
-        // 1. 解析關鍵字 (支援空格、逗號分隔) => ["nike", "adidas"]
+        // 解析關鍵字
         persistentSearchKeywords = rawInput.split(/[\s,，、]+/).filter(k => k);
         if (persistentSearchKeywords.length === 0) return;
 
         let totalMatches = 0;
-        // 用來收集所有命中的樓層，以便最後排序跳轉
         let matchedFloorsSet = new Set();
-        // 2. 遍歷所有樓層，計算命中數並更新徽章
+
+        // 遍歷所有樓層
         for (const floorName of Object.keys(currentFloorData)) {
-            const brands = currentFloorData[floorName];
-            // 計算該樓層有幾個品牌中了關鍵字
-            const matchCount = brands.filter(brand => 
+            const categories = currentFloorData[floorName];
+            
+            // 關鍵修改：將該樓層「所有類別」的品牌攤平成一個大陣列
+            // Object.values(categories) 會拿到 [[brand1, brand2], [brand3...]]
+            // .flat() 會變成 [brand1, brand2, brand3...]，方便我們計算數量
+            const allBrandsInFloor = Object.values(categories).flat();
+
+            // 計算命中數
+            const matchCount = allBrandsInFloor.filter(brand => 
                 persistentSearchKeywords.some(keyword => brand.toLowerCase().includes(keyword))
             ).length;
-            // 更新側邊欄徽章
+
             updateFloorBadge(floorName, matchCount);
+
             if (matchCount > 0) {
                 totalMatches += matchCount;
                 matchedFloorsSet.add(floorName);
             }
         }
 
-        // 3. 自動跳轉邏輯
+        // 自動跳轉邏輯
         if (totalMatches > 0) {
-            // 將命中的樓層轉為陣列並排序
             const matchedFloors = Array.from(matchedFloorsSet);
             matchedFloors.sort((a, b) => getFloorValue(a) - getFloorValue(b));
 
-            // 跳轉到排序後的第一個命中樓層
             const targetFloor = matchedFloors[0];
             const btn = document.getElementById(`btn-floor-${targetFloor}`);
             if (btn) btn.click(); 
@@ -1012,6 +1184,27 @@
             body.innerHTML += `<div class="msg msg-ai">連線錯誤，請稍後再試。</div>`;
         }
         body.scrollTop = body.scrollHeight;
+    }
+
+    // [新增] 打開 AI 視窗並預填問題
+    function toggleAIWithQuery(keyword) {
+        const modal = document.getElementById('aiModal');
+        const input = document.getElementById('aiInput');
+        
+        // 1. 打開視窗
+        modal.style.display = 'flex';
+        
+        // 2. 預填問題 (讓使用者可以直接按送出，或是修改 並過濾掉可能導致錯誤的特殊符號)
+        if (keyword) {
+            // 🔴 加強過濾邏輯：
+            // [\\'"\n\r]  -> 既有的防爆過濾 (反斜線、引號、換行)
+            // [?!/.,:;]   -> 新增的符號過濾 (問號、驚嘆號、斜線、句點、逗號等)
+            // g           -> 全部取代
+            const cleanKeyword = keyword.replace(/[\\'"\n\r?!/.,:;]/g, '').trim(); 
+            
+            input.value = `請問哪裡有賣 ${cleanKeyword}？`;
+            input.focus();
+        } 
     }
 
     // 初始化與視窗響應

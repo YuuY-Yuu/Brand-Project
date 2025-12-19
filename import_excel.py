@@ -4,25 +4,22 @@ import urllib
 import os
 
 # ==========================================
-# 🛠️ 設定區 (已更新為這 4 個新檔案)
+# 🛠️ 設定區 (Excel 檔案清單)
 # ==========================================
-# ⚠️ 注意：檔名裡的空格要完全一樣喔 (例如 DIAMOND  TOWERS 中間有兩個空白)
 EXCEL_FILES_LIST = [
-    'DIAMOND  TOWERS 二館_含類別.xlsx',
-    'DIAMOND  TOWERS一館_含類別.xlsx',
-    '新光三越台北南西店_含類別.xlsx',
-    '新光三越台北站前店_含類別.xlsx'
+    '新光三越台北南西店三館_含類別.xlsx',
+    '新光三越台北天母店_含類別.xlsx',
+    '新光三越台北天母店二館_含類別.xlsx'
 ]
 
-TABLE_NAME = 'BRAND_PRESENCE'     # 資料表名稱
-SERVER = 'localhost'              # 伺服器名稱
-DATABASE = 'BrandLocationDB'      # 資料庫名稱
+TABLE_NAME = 'BRAND_PRESENCE'
+SERVER = 'localhost'
+DATABASE = 'BrandLocationDB'
 # ==========================================
 
-def run_import_diamond_skm():
-    print("🚀 準備開始匯入 4 個新檔案 (智慧補全模式)...")
+def run_import_fix_columns():
+    print("🚀 準備開始匯入 Excel 檔案 (強制修正標題模式)...")
     
-    # 1. 建立連線
     print("正在連線到 SQL Server ...")
     try:
         driver = 'ODBC Driver 17 for SQL Server'
@@ -34,23 +31,32 @@ def run_import_diamond_skm():
         print(f"❌ 連線失敗: {e}")
         return
 
-    # 2. 準備 SQL 指令
     sql_check = text(f"SELECT category FROM {TABLE_NAME} WHERE location=:loc AND floor=:flr AND name=:nm")
     sql_insert = text(f"INSERT INTO {TABLE_NAME} (location, floor, name, category) VALUES (:loc, :flr, :nm, :cat)")
     sql_update = text(f"UPDATE {TABLE_NAME} SET category=:cat WHERE location=:loc AND floor=:flr AND name=:nm")
 
-    # 3. 開始處理
     with engine.connect() as conn:
         for excel_file in EXCEL_FILES_LIST:
             print(f"📂 正在處理: {excel_file} ...")
             
             if not os.path.exists(excel_file):
-                print(f"   ⚠️ 找不到檔案，請檢查檔名是否正確！(特別注意空格)")
+                print(f"   ⚠️ 找不到檔案，請確認檔名！")
                 continue
 
             try:
+                # 讀取 Excel
                 df = pd.read_excel(excel_file, engine='openpyxl')
-                df = df.fillna('') # 清除空白值
+                
+                # 強制修正欄位 (不管標題叫什麼，前4欄就是 location, floor, name, 類別)
+                if len(df.columns) >= 4:
+                    new_columns = ['location', 'floor', 'name', '類別'] + df.columns.tolist()[4:]
+                    df.columns = new_columns
+                else:
+                    print("   ❌ 欄位數量不足 4 欄，跳過！")
+                    continue
+
+                df = df.fillna('') # 清除空白
+
             except Exception as e:
                 print(f"   ❌ 讀取失敗: {e}")
                 continue
@@ -68,24 +74,18 @@ def run_import_diamond_skm():
                 }
 
                 try:
-                    # 步驟 1: 檢查資料庫
                     result = conn.execute(sql_check, params).fetchone()
 
                     if result is None:
-                        # 情況 A: 新增
                         conn.execute(sql_insert, params)
                         inserted += 1
                     else:
                         db_category = result[0]
-                        # 情況 B: 補齊類別 (原本是空的才補)
                         if db_category is None or db_category == '':
                             conn.execute(sql_update, params)
                             updated += 1
-                            print(f"   🆙 補齊類別: {row['name']} ({row['floor']})")
                         else:
-                            # 情況 C: 跳過
                             skipped += 1
-                            print(f"   ⏭️  已存在略過: {row['name']} ({row['floor']})")
 
                 except Exception as e:
                     print(f"   ⚠️ 第 {index} 筆錯誤: {e}")
@@ -93,9 +93,9 @@ def run_import_diamond_skm():
             conn.commit()
             print(f"   📊 小結: 新增 {inserted} / 更新 {updated} / 略過 {skipped}\n")
 
-    print("🎉 全部作業完成！")
+    print("🎉 Excel 檔案匯入完成！")
 
 if __name__ == '__main__':
-    run_import_diamond_skm()
+    run_import_fix_columns()
 
 # python import_excel.py
